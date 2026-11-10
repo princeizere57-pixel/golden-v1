@@ -52,7 +52,7 @@ export default async function ForYouPage() {
           </Link>
           <Link href="/challenge" className="rounded-2xl bg-charcoal p-4 text-white">
             <span className="block text-xs font-semibold uppercase tracking-wide text-[#facc15]">Start here</span>
-            <span className="mt-1 block font-semibold leading-snug">3-Day Zero-Waste Challenge</span>
+            <span className="mt-1 block font-semibold leading-snug">5-Day Zero-Waste Challenge</span>
           </Link>
           <Link href={can(viewer.tier, "modules") ? "/modules" : "/checkout?plan=executive"} className="rounded-2xl border-2 border-button p-4">
             <span className="block text-xs font-semibold uppercase tracking-wide text-muted">Technique{!can(viewer.tier, "modules") && <ExecBadge />}</span>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "3-Day Zero-Waste Challenge" };
+export const metadata: Metadata = { title: "5-Day Zero-Waste Challenge" };
 
 const DAYS = [
   {
@@ -43,14 +43,40 @@ const DAYS = [
     ],
     cta: { label: "Plan my two-dish dinner", href: "/plan" },
   },
+  {
+    day: 4,
+    title: "The Rescue Drill",
+    time: "15 minutes",
+    goal: "Learn to save a dish instead of binning it, before it ever happens for real.",
+    steps: [
+      "Make a quick pan sauce from yesterday's leftovers: fry garlic, add stock, reduce.",
+      "Taste it at three points: after the stock, halfway through reducing, at the end.",
+      "If it's too salty, too thin or splits, open Fix My Mistake and follow the exact amounts it gives you.",
+      "Note the tell you'll recognise next time: the sheen of a split sauce, the coating on a spoon.",
+    ],
+    cta: { label: "Practise with Fix My Mistake", href: "/plan" },
+  },
+  {
+    day: 5,
+    title: "Cook Once, Eat Twice",
+    time: "About 40 minutes",
+    goal: "One cook that becomes tonight's dinner and tomorrow's lunch, using up the last of the fridge.",
+    steps: [
+      "Check your pantry in Golden and pick a dinner that uses what's left from the week.",
+      "Double the base (grains, roast vegetables or a sauce) while the main cooks.",
+      "Portion half into containers before serving, so it becomes lunch, not leftovers.",
+      "Open your kitchen log: five days of meals, and what you didn't throw away.",
+    ],
+    cta: { label: "Pick tonight's cook-once dinner", href: "/pantry" },
+  },
 ];
 
 export default function ChallengePage() {
   return (
     <main className="mx-auto px-4 pb-12 pt-6">
-      <p className="text-sm font-semibold uppercase tracking-wide text-accent">Free for 3 days</p>
-      <h1 className="font-display text-[2.2rem]">The 3-Day <span className="text-accent">Zero-Waste</span> Challenge</h1>
-      <p className="mt-2 text-muted">Turn whatever is in your fridge into three good dinners, without a trip to the grocery store.</p>
+      <p className="text-sm font-semibold uppercase tracking-wide text-accent">Free for 5 days, every feature unlocked</p>
+      <h1 className="font-display text-[2.2rem]">The 5-Day <span className="text-accent">Zero-Waste</span> Challenge</h1>
+      <p className="mt-2 text-muted">Turn whatever is in your fridge into five good dinners, without a trip to the grocery store.</p>
 
       <ol className="mt-6 space-y-5">
         {DAYS.map((d) => (

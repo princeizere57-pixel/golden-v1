@@ -137,7 +137,7 @@ const PLAN_BENEFITS = {
 
 const FAQ = [
   ["How fast will I see value?", "Tonight. Tell Golden what's in your fridge and you get a dinner that uses it, timed and written for your level, in about a minute."],
-  ["What happens in the free 3 days?", "You get everything. Day 1: a 5-minute fridge check and dinner from what you have. Day 2: three master sauces that make random ingredients work. Day 3: a two-dish dinner, timed to land together, in under 30 minutes. Cancel before day 3 ends and you pay nothing."],
+  ["What happens in the free 5 days?", "You get every feature, whichever plan you picked. Day 1: a 5-minute fridge check and dinner from what you have. Day 2: three master sauces that make random ingredients work. Day 3: a two-dish dinner, timed to land together, in under 30 minutes. Day 4: a rescue drill with Fix My Mistake. Day 5: cook once, eat twice. Your plan starts after day 5; cancel before then and you pay nothing."],
   ["What's the difference between the two plans?", `The Golden Experience (${money(experience.price)}/year) gives you recipes rewritten for your level and cook mode, one dish at a time. The Executive Chef System (${money(executive.price)}/year) adds the timing orchestrator, the Fix My Mistake AI Doctor, Pantry-to-Plate, the technique modules and the money-back guarantee.`],
   ["Why is it 80% off?", `The founding price is for the first 5,000 members only, until the countdown ends. After that the Executive Chef System is ${money(executive.regularPrice ?? executive.price)}/year. Founding members keep their price for as long as they stay.`],
   ["How does the money-back guarantee work?", `Cook ${GUARANTEE.dishes} full meals with Golden. If you don't get every dish on the table hot and on time, rescue at least one mistake, and see a real drop in your weekly food waste, send us your session log within ${GUARANTEE.days} days of purchase for a 100% refund.`],
@@ -324,9 +324,9 @@ export default async function LandingPage() {
               sub="Start here, free"
               price="$0"
               per=""
-              note="Everything unlocked for 3 days"
+              note="Everything unlocked for 5 days"
               benefits={["See what you'd save, before you pay a cent"]}
-              items={["Day 1: a 5-minute fridge check and dinner from what you have", "Day 2: 3 master sauces for random ingredients", "Day 3: a two-dish dinner in under 30 minutes"]}
+              items={["Day 1: a 5-minute fridge check and dinner from what you have", "Day 2: 3 master sauces for random ingredients", "Day 3: a two-dish dinner in under 30 minutes", "Day 4: rescue a dish with Fix My Mistake", "Day 5: cook once, eat twice"]}
               cta="Start free"
             />
             <PriceCard
