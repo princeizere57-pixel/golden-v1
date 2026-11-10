@@ -2,159 +2,166 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { FlameIcon, HatIcon, LifebuoyIcon, PanFireIcon, SteamingDishIcon, TrophyIcon } from "@/components/icons-3d";
+import { FridgeIcon, HatIcon, LifebuoyIcon, PanFireIcon, SteamingDishIcon, StopwatchIcon, TrophyIcon } from "@/components/icons-3d";
+import { HeadlineTicker } from "@/components/headline-ticker";
 import { Countdown } from "@/components/landing/countdown";
 import { Phone, type Screen } from "@/components/landing/phone";
+import { PantryMatcher } from "@/components/pantry-matcher";
 import { Brand } from "@/components/site-chrome";
+import { TrialTimeline } from "@/components/trial-timeline";
 import { launchState } from "@/lib/billing/launch";
 import { ATTRACTION, GUARANTEE, money, offerById, percentOff, perMonth } from "@/lib/billing/offers";
+import { RECIPES } from "@/lib/data/recipes";
 import { RANKS } from "@/lib/gamify";
+import { libraryRecipes } from "@/lib/library";
+import { recipeHref } from "@/lib/links";
+import { thumb } from "@/lib/mealdb/convert";
 
 export const metadata: Metadata = {
-  title: "Golden · The Executive Chef System for your kitchen",
-  description: "For the professional or parent walking in at 7 PM: turn leftovers into dinner, rescue mistakes in seconds, and land every dish hot at the same minute.",
+  title: "Golden · Stop paying for dinners that end up in the bin",
+  description: "Cook with confidence, waste nothing, level up. Golden turns what's in your fridge into dinner, rescues expensive mistakes and lands every dish hot together.",
 };
 
 const executive = offerById("executive")!;
 const experience = offerById("experience")!;
 
-/** Every part of the page, listed at the top so visitors can jump straight to it. */
+/** Sourced estimate: USDA Economic Research Service, food loss for a family of four. */
+const FAMILY_WASTE_PER_YEAR = 1500;
+
+/** The whole page in five stops, one tap away: who it's for, why it matters, how it works, price, questions. */
 const SECTIONS = [
-  ["The problem", "#problem"],
-  ["Who it's for", "#avatars"],
-  ["How it works", "#system"],
-  ["Real costs", "#pains"],
-  ["What you get", "#stack"],
-  ["Results", "#equation"],
-  ["Milestones", "#ranks"],
-  ["Compare", "#contrast"],
-  ["Pricing", "#pricing"],
-  ["Guarantee", "#guarantee"],
-  ["FAQ", "#faq"],
+  ["Who it's for", "#who"],
+  ["Why", "#why"],
+  ["How", "#how"],
+  ["Price", "#pricing"],
+  ["Questions", "#faq"],
 ];
 
-const AVATARS = [
+/** The people Golden is built for, in their own moment. */
+const WHO = [
   {
-    title: "Ambitious professionals",
-    pain: "You need real, nutrient-dense food to perform, but you don't have hours to plan, shop and babysit pans.",
-    win: "Dinner planned from what you already have, cooked in under 35 hands-on minutes.",
+    title: "You're home at 7 PM, tired",
     photo: "/landing/avatar-professional.jpg",
     alt: "A professional woman in a blazer cooking a quick stir-fry after work",
+    moment: "You want real food, not another takeaway. You've got about 30 minutes and whatever is in the fridge.",
+    gets: "Tonight's dinner from what you already have, step by step.",
   },
   {
-    title: "Busy parents",
-    pain: "Different tastes, tight schedules and the nightly pressure to put something healthy on the table.",
-    win: "One timeline for the whole family meal, so nothing burns while you help with homework.",
+    title: "You feed a family on a budget",
     photo: "/landing/avatar-parent.jpg",
     alt: "A father and his young daughter laughing while they cook dinner together",
+    moment: "The grocery bill keeps going up, some of it still ends up in the bin, and everyone wants something different.",
+    gets: "Meals from food you've already bought, all ready at the same time.",
   },
   {
-    title: "Home cooking enthusiasts",
-    pain: "You know the basics, but multi-course timing and hosting turn into stress at the stove.",
-    win: "Restaurant-style pacing and technique modules, so you cook freely and stay with your guests.",
+    title: "You cook for people you love",
     photo: "/landing/avatar-enthusiast.jpg",
     alt: "A home cook serving a multi-course dinner to friends by candlelight",
+    moment: "Three dishes at once means cold food, an expensive cut you're scared to ruin, and you stuck at the stove.",
+    gets: "Every dish lands hot together, so you sit down with them.",
   },
 ];
 
-const FRUSTRATIONS = [
-  ["Meal timing breakdown", "The steak goes cold while the potatoes finish. Courses arrive out of order."],
-  ["Ingredient waste", "Forgotten produce rots in the crisper drawer. Another grocery run for one item."],
-  ["Decision fatigue", "\"What's for dinner?\" Every single day, after a full day of decisions."],
-  ["Multi-dish chaos", "Two burners, one oven, three dishes and no idea what goes first."],
+/** Why it matters: what bad dinners cost them, then what changes. */
+const WHY: { kind: string; Icon: (p: { size?: number }) => ReactNode; pain: string; fix: string; win: string }[] = [
+  {
+    kind: "Your money",
+    Icon: FridgeIcon,
+    pain: "You pay for food twice: once at the shop, again when the forgotten vegetables go in the bin, the expensive cut comes out grey and tough, and dinner turns into a takeaway.",
+    fix: "Cook what's already in your fridge, and save the dish when something goes wrong.",
+    win: "Less in the bin, fewer emergency shops.",
+  },
+  {
+    kind: "Your well-being",
+    Icon: SteamingDishIcon,
+    pain: "It's 7 PM and \"what's for dinner?\" is one decision too many. So it's something processed again, or two draining hours at the stove.",
+    fix: "One clear pick for tonight, written for your level, one step at a time.",
+    win: "Real food in about 30 minutes, without the stress.",
+  },
+  {
+    kind: "Your people",
+    Icon: PanFireIcon,
+    pain: "The steak goes cold while the potatoes finish, and you spend the evening at the stove while everyone else is talking.",
+    fix: "Every dish timed to land hot together, with a nudge when to start each one.",
+    win: "Dinner on time, and you at the table.",
+  },
 ];
 
-const PILLARS: { tag: string; title: string; mechanism: string; text: string; screen: Screen; Icon: (p: { size?: number }) => ReactNode }[] = [
+/** How, part 1: what you get. Benefits first, in plain words. */
+const BENEFITS: { title: string; text: string; Icon: (p: { size?: number }) => ReactNode }[] = [
+  { title: "Dinner from what you already have", text: "No special shop. The food you bought gets eaten, not binned.", Icon: FridgeIcon },
+  { title: "Expensive mistakes, saved", text: "Too salty, split or overcooked? Fixed in seconds, not thrown away.", Icon: LifebuoyIcon },
+  { title: "Everything hot, together", text: "Two, three or four dishes ready at the same minute, without the juggling.", Icon: StopwatchIcon },
+  { title: "Better every time you cook", text: "Recipes pitched at your level, and XP, streaks and chef ranks as you improve.", Icon: TrophyIcon },
+];
+
+/** How, part 2: the features that deliver those benefits. */
+const FEATURES: { name: string; benefit: string; text: string; screen: Screen; Icon: (p: { size?: number }) => ReactNode }[] = [
   {
-    tag: "Pillar I · Prevention",
-    title: "Mistakes stopped before they start",
-    mechanism: "Skill-Adaptation Engine",
-    text: "Every recipe recalibrates to your level and your kitchen: micro-steps and sensory cues for beginners, pro shorthand for confident cooks, technique and food science for chefs. Switch levels mid-cook.",
+    name: "Skill-Adaptation Engine",
+    benefit: "Get it right the first time",
+    text: "Every recipe is rewritten for your level: small steps and \"what it should look like\" cues for beginners, pro shorthand for confident cooks. No more guessing with expensive ingredients.",
     screen: "cook",
     Icon: HatIcon,
   },
   {
-    tag: "Pillar II · Intervention",
-    title: "Your dish, rescued in seconds",
-    mechanism: "'Fix My Mistake' AI Doctor",
-    text: "Too salty, split, burnt or bland? Snap a photo or tap what you see. You get exact amounts for your pan, built on acid, fat, salt, sugar and heat, before dinner goes in the bin.",
+    name: "'Fix My Mistake' AI Doctor",
+    benefit: "Save the dish, not the bin",
+    text: "Snap a photo or tap what you see. You get the exact fix and the amounts for your pan, in seconds.",
     screen: "fix",
     Icon: LifebuoyIcon,
   },
   {
-    tag: "Pillar III · Execution",
-    title: "Every dish lands hot, together",
-    mechanism: "Multi-Dish Timing Orchestrator",
-    text: "Up to four recipes merge into one master timeline. Golden staggers every start, gives you one active task at a time, and chimes and vibrates when it's time to switch.",
+    name: "Multi-Dish Timing Orchestrator",
+    benefit: "Every dish hot, together",
+    text: "Up to four recipes become one timeline. Golden staggers every start, gives you one hands-on task at a time, and chimes when it's time to switch.",
     screen: "timeline",
     Icon: PanFireIcon,
   },
 ];
 
-const PAINS = [
-  {
-    kind: "Wealth",
-    pain: "The average US family of four throws away around $1,500 of food a year, then pays again for takeout.",
-    fix: "Pantry-to-Plate Optimization",
-    how: "Turns what's already in your fridge into dinner and only lists what you're missing.",
-  },
-  {
-    kind: "Health",
-    pain: "Ultra-processed meals, eating out, or two disconnected, exhausting hours at the stove every night.",
-    fix: "Streamlined Execution Pathways",
-    how: "Whole-food meals in under 35 minutes of hands-on time, one clear step at a time.",
-  },
-  {
-    kind: "Relationships",
-    pain: "Hosting anxiety, cold food, and being stuck at the stove while everyone else is talking.",
-    fix: "Synchronized Table Landing",
-    how: "You control the clock, so you serve hot, multi-course meals and stay with your people.",
-  },
+/** What's included, with what each part is worth to you. */
+const INCLUDED = [
+  { name: "Pantry-to-Plate Matcher", value: 80 },
+  { name: "'Fix My Mistake' AI Doctor", value: 120 },
+  { name: "Multi-Dish Timing Orchestrator", value: 150 },
+  { name: "Chinese, Korean & Italian technique modules", value: 100 },
+  { name: "Recipes rewritten for your level + hands-free cook mode", value: 50 },
 ];
 
-const VALUE_STACK = [
-  { name: "Multi-Dish Synchronized Timing Orchestrator", benefit: "No more juggling oven temperatures, pan space and staging. Everything finishes hot at the same minute.", value: 150 },
-  { name: "'Fix My Mistake' AI Doctor", benefit: "Rescues costly ingredients from the bin and removes the panic of a ruined dinner.", value: 120 },
-  { name: "Pantry-to-Plate Matcher", benefit: "Answers \"what's for dinner?\" from your own fridge and gets more from every grocery trip.", value: 80 },
-  { name: "Chinese, Korean & Italian Culinary Arts Modules", benefit: "Wok heat control, fermentation and balance, pan sauces and pasta texture: technique, not memorizing.", value: 100 },
-  { name: "Skill-Adaptation Engine + hands-free cook mode", benefit: "Recipes rewritten for your level, with timers, chimes and a screen that stays on.", value: 50 },
-];
-
-const EQUATION = [
-  ["Dream outcome", "Flawless multi-dish meals, far less food waste, restaurant-quality home cooking and real kitchen confidence."],
-  ["Likelihood of success", "A timing engine, skill-adapted steps and an AI Doctor on standby. You're never cooking alone."],
-  ["Time to results", "Instant onboarding and your first planned meal within 15 minutes of signing up."],
-  ["Effort and sacrifice", "No guessing when to drop ingredients in, no flipping recipe books. Golden runs the sequence for you."],
-];
-
-const COMPARE = [
-  ["Core architecture", "Library of disconnected recipe cards and videos", "Kitchen operating system with a live timeline"],
-  ["When it goes wrong", "Failed attempts end up in the bin", "AI Doctor for real-time rescue"],
-  ["Multi-dish cooking", "You juggle separate timers and recipes", "One unified timeline: heat, prep and plating"],
-  ["Pantry", "Rigid lists and special grocery runs", "Pantry-to-Plate Matcher with substitutes"],
-  ["Cuisine depth", "Surface-level beginner recipes", "Italian, Korean and Chinese technique modules"],
-  ["Risk", "Non-refundable", "10 Perfect Dishes money-back guarantee"],
-];
+/** Plan benefits, said before the feature list on each price card. */
+const PLAN_BENEFITS = {
+  executive: ["Stop binning the food you buy", "Save expensive dishes when they go wrong", "Every dish hot, together, with less stress", "Get better every time you cook"],
+  experience: ["Get recipes right the first time", "Calm, step-by-step cooking, one dish at a time"],
+};
 
 const FAQ = [
-  ["What happens in the free 3-Day Zero-Waste Challenge?", "For three days you get the full Executive Chef System for free. Day 1: a 5-minute crisper-drawer audit. Day 2: three master sauces that tie random ingredients together. Day 3: a two-dish dinner, timed by the orchestrator, on the table in under 30 minutes. Cancel before day 3 ends and you pay nothing."],
-  ["What's the difference between the two plans?", `The Golden Experience (${money(experience.price)}/year) gives you skill-adapted recipes and cook mode, one dish at a time. The Golden Executive Chef System (${money(executive.price)}/year) adds the Multi-Dish Timing Orchestrator, the Fix My Mistake AI Doctor, the Pantry-to-Plate Matcher, the cuisine modules and the money-back guarantee.`],
-  ["Why is it 80% off?", `The founding price is for the first 5,000 members only, until the countdown ends. After that, the Executive Chef System is ${money(executive.regularPrice ?? executive.price)}/year. Founding members keep their price for as long as they stay subscribed.`],
-  ["How does the money-back guarantee work?", `Cook ${GUARANTEE.dishes} full meals with Golden. If you don't get every dish on the table hot and on time, rescue at least one mistake with the AI Doctor, and see a real drop in your weekly food waste, send us your session log within ${GUARANTEE.days} days of purchase for a 100% refund.`],
-  ["How do I cancel?", "Any time, in two taps, from your Whop account. Cancel during the free challenge and you're never charged."],
-  ["Does it work on my phone?", "Yes. Golden runs on iPhone, Android and any computer browser, and cook mode keeps your screen awake while you cook."],
+  ["How fast will I see value?", "Tonight. Tell Golden what's in your fridge and you get a dinner that uses it, timed and written for your level, in about a minute."],
+  ["What happens in the free 3 days?", "You get everything. Day 1: a 5-minute fridge check and dinner from what you have. Day 2: three master sauces that make random ingredients work. Day 3: a two-dish dinner, timed to land together, in under 30 minutes. Cancel before day 3 ends and you pay nothing."],
+  ["What's the difference between the two plans?", `The Golden Experience (${money(experience.price)}/year) gives you recipes rewritten for your level and cook mode, one dish at a time. The Executive Chef System (${money(executive.price)}/year) adds the timing orchestrator, the Fix My Mistake AI Doctor, Pantry-to-Plate, the technique modules and the money-back guarantee.`],
+  ["Why is it 80% off?", `The founding price is for the first 5,000 members only, until the countdown ends. After that the Executive Chef System is ${money(executive.regularPrice ?? executive.price)}/year. Founding members keep their price for as long as they stay.`],
+  ["How does the money-back guarantee work?", `Cook ${GUARANTEE.dishes} full meals with Golden. If you don't get every dish on the table hot and on time, rescue at least one mistake, and see a real drop in your weekly food waste, send us your session log within ${GUARANTEE.days} days of purchase for a 100% refund.`],
+  ["How do I cancel? Does it work on my phone?", "Cancel any time in two taps from your account. Golden runs on iPhone, Android and any browser, and cook mode keeps your screen awake while you cook."],
 ];
 
 export default async function LandingPage() {
   const launch = await launchState();
   const pct = percentOff(executive);
   const endDate = new Date(launch.endsAt).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
-  const totalValue = VALUE_STACK.reduce((s, v) => s + v.value, 0);
+  const totalValue = INCLUDED.reduce((s, v) => s + v.value, 0);
+  const wastePerWeek = Math.round(FAMILY_WASTE_PER_YEAR / 52);
+  const recipes = [...RECIPES, ...libraryRecipes()].map((r) => ({
+    slug: r.slug,
+    href: recipeHref(r),
+    title: r.title,
+    image: r.image ? thumb(r.image) : undefined,
+    ingredients: r.ingredients.map((i) => i.name),
+  }));
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-black font-sans text-white [&_[id]]:scroll-mt-44">
       <header className="sticky top-0 z-40 bg-black/85 backdrop-blur-xl">
-        {/* Countdown and founding spots left, always at the top */}
+        {/* The real founding offer: spots counted in Supabase, fixed end date */}
         <a href="#pricing" className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-[#facc15] px-3 py-2 text-center text-sm font-semibold text-black">
           <span>{launch.open ? `${pct}% off founding price ends in` : "Founding price"}</span>
           <Countdown endsAt={launch.endsAt} compact />
@@ -164,195 +171,152 @@ export default async function LandingPage() {
           <Link href="/landing" aria-label="Golden home"><Brand className="text-2xl text-white sm:text-3xl" /></Link>
           <Link href="/signin" className="rounded-full bg-[#facc15] px-5 py-2.5 text-[15px] font-semibold text-black transition hover:bg-[#fde047] sm:px-6">Try free</Link>
         </nav>
-        {/* Every section of the page, one tap away */}
         <nav aria-label="Sections" className="mx-auto max-w-6xl overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6">
-          <ul className="flex w-max gap-2">
-            {SECTIONS.map(([label, href]) => (
-              <li key={href}><a href={href} className="block whitespace-nowrap rounded-full border border-white/15 px-4 py-2 text-sm text-white/75 transition hover:border-[#facc15] hover:text-white">{label}</a></li>
+          <ol className="flex w-max gap-2">
+            {SECTIONS.map(([label, href], i) => (
+              <li key={href}><a href={href} className="block whitespace-nowrap rounded-full border border-white/15 px-4 py-2 text-sm text-white/75 transition hover:border-[#facc15] hover:text-white"><span className="mr-1.5 text-[#facc15]">{i + 1}</span>{label}</a></li>
             ))}
-          </ul>
+          </ol>
         </nav>
       </header>
 
       <main>
-        {/* 1. Hero: the avatar, the 7 PM problem, the promise */}
-        <section className="relative px-5 pb-16 pt-12 text-center sm:pt-20">
+        {/* Hero: the promise gliding along a line, then what it means for their wallet, tonight */}
+        <section className="relative pb-16 pt-10 text-center sm:pt-16">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-[36rem] max-w-4xl bg-[radial-gradient(ellipse_at_center,rgba(250,204,21,0.18),transparent_65%)]" />
-          <h1 className="relative mx-auto max-w-5xl text-[2.9rem] font-bold leading-[1.02] tracking-tight sm:text-7xl lg:text-[5.6rem]">
-            It&apos;s 7:00 PM. Dinner, <span className="text-gold">on autopilot.</span>
-          </h1>
-          <p className="relative mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
-            Home at 7 PM, three random leftovers, no plan? Golden turns them into dinner and times every dish to land hot together, in under 30 minutes. It&apos;s all done for you: just follow along.
+          <HeadlineTicker tone="dark" className="relative" />
+          <p className="relative mx-auto mt-8 max-w-2xl px-5 text-lg leading-relaxed text-white/75 sm:text-xl">
+            Stop paying for dinners that end up in the bin. Golden turns what&apos;s already in your fridge into tonight&apos;s dinner, rescues the expensive cut before it&apos;s ruined, and lands every dish hot together. All for {perMonth(executive)} a month.
           </p>
-          <div className="relative mx-auto mt-9 flex max-w-xl flex-col gap-3 whitespace-nowrap sm:flex-row sm:justify-center">
-            <Link href="/signin" className="rounded-full bg-[#facc15] px-8 py-4 text-lg font-semibold text-black transition hover:bg-[#fde047]">Start the free 3-day challenge</Link>
-            <a href="#pricing" className="rounded-full border border-white/20 px-8 py-4 text-lg font-semibold transition hover:bg-white/10">See the offer</a>
+          <div className="relative mx-auto mt-9 flex max-w-xl flex-col gap-3 whitespace-nowrap px-5 sm:flex-row sm:justify-center">
+            <Link href="/signin" className="rounded-full bg-[#facc15] px-8 py-4 text-lg font-semibold text-black transition hover:bg-[#fde047]">Start free: $0 today</Link>
+            <a href="#how" className="rounded-full border border-white/20 px-8 py-4 text-lg font-semibold transition hover:bg-white/10">Try it on your fridge</a>
           </div>
-          <p className="relative mt-4 text-sm text-white/50">$0 today · cancel any time · iPhone, Android and web</p>
+          <p className="relative mt-4 text-sm text-white/55">Your first dinner tonight · {ATTRACTION.days} days free · cancel in two taps</p>
 
-          <div className="relative mx-auto mt-16 flex max-w-5xl items-end justify-center gap-2">
+          <div className="relative mx-auto mt-16 flex max-w-5xl items-end justify-center gap-2 px-5">
             <div className="hidden translate-y-10 md:block"><Phone screen="discover" tilt="left" /></div>
             <Phone screen="plan" tilt="none" priority className="z-10" />
             <div className="hidden translate-y-10 md:block"><Phone screen="fix" tilt="right" /></div>
           </div>
         </section>
 
-        {/* 2. The size of the problem */}
-        <section id="problem" className="scroll-mt-28 px-5 py-20 sm:py-28">
-          <p className="mx-auto max-w-4xl text-center text-3xl font-semibold leading-snug sm:text-5xl sm:leading-tight">
-            <span className="bg-gradient-to-b from-white to-white/45 bg-clip-text text-transparent">
-              Around $1,500 a year. That&apos;s roughly how much food the average family of four throws away, before a single takeout order. It&apos;s time to fight back.
-            </span>
-          </p>
-          <p className="mt-4 text-center text-sm text-white/40">Estimate: USDA Economic Research Service.</p>
-
-          <div className="mx-auto mt-16 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {FRUSTRATIONS.map(([t, d]) => (
-              <article key={t} className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
-                <h3 className="text-lg font-semibold">{t}</h3>
-                <p className="mt-2 text-white/60">{d}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* 3. Who it's for */}
-        <section className="px-5 py-16" aria-labelledby="avatars">
-          <h2 id="avatars" className="mx-auto max-w-3xl text-center text-xl font-semibold leading-relaxed text-white/80 sm:text-2xl">
-            Great food is essential to every part of life.<br />Find out how Golden fits yours.
+        {/* 1. Who it's for: the specific people, in their own moment */}
+        <section id="who" className="px-5 py-20 sm:py-28" aria-labelledby="who-title">
+          <p className="text-center text-sm font-semibold uppercase tracking-widest text-[#facc15]">1 · Who it&apos;s for</p>
+          <h2 id="who-title" className="mx-auto mt-3 max-w-4xl text-center text-4xl font-bold tracking-tight sm:text-6xl">
+            If you&apos;ve ever thrown away <span className="text-gold">food you paid for</span>
           </h2>
-          <div className="mx-auto mt-12 grid max-w-6xl gap-5 md:grid-cols-3">
-            {AVATARS.map((a) => (
-              <article key={a.title} className="relative flex min-h-[34rem] flex-col justify-end overflow-hidden rounded-[2.5rem] p-7">
-                <Image src={a.photo} alt={a.alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
+          <div className="mx-auto mt-14 grid max-w-6xl gap-5 md:grid-cols-3">
+            {WHO.map((w) => (
+              <article key={w.title} className="relative flex min-h-[30rem] flex-col justify-end overflow-hidden rounded-[2.5rem] p-7">
+                <Image src={w.photo} alt={w.alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
                 <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-transparent via-black/55 to-black/95" />
                 <div className="relative">
-                  <h3 className="text-2xl font-semibold">For {a.title.toLowerCase()}</h3>
-                  <p className="mt-3 text-white/75">{a.pain}</p>
-                  <p className="mt-4 border-t border-white/15 pt-4 font-medium text-[#fde68a]">{a.win}</p>
+                  <h3 className="text-2xl font-semibold">{w.title}</h3>
+                  <p className="mt-3 text-white/75">{w.moment}</p>
+                  <p className="mt-4 border-t border-white/15 pt-4 font-medium text-[#fde68a]">Golden: {w.gets}</p>
                 </div>
               </article>
             ))}
           </div>
         </section>
 
-        {/* 4. Three pillars, alternating with phone screens */}
-        <section id="system" className="scroll-mt-28 px-5 py-20" aria-labelledby="system-title">
-          <h2 id="system-title" className="mx-auto max-w-4xl text-center text-4xl font-bold tracking-tight sm:text-6xl">
-            An operating system <span className="text-gold">for your kitchen</span>
+        {/* 2. Why: what bad dinners cost you, in money, well-being and people */}
+        <section id="why" className="px-5 py-20" aria-labelledby="why-title">
+          <p className="text-center text-sm font-semibold uppercase tracking-widest text-[#facc15]">2 · Why</p>
+          <h2 id="why-title" className="mx-auto mt-3 max-w-4xl text-center text-3xl font-semibold leading-snug sm:text-5xl sm:leading-tight">
+            <span className="bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
+              A family of four throws away around ${FAMILY_WASTE_PER_YEAR.toLocaleString("en-US")} of food a year. That&apos;s about {money(wastePerWeek)} every week, gone.
+            </span>
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-center text-lg text-white/60">
-            Ordinary recipes are static. Real kitchens aren&apos;t. Golden covers all three phases of cooking: before, during and at the plate.
-          </p>
-          <div className="mx-auto mt-20 max-w-6xl space-y-28">
-            {PILLARS.map((p, i) => (
-              <div key={p.tag} className={`flex flex-col items-center gap-14 md:flex-row ${i % 2 ? "md:flex-row-reverse" : ""}`}>
-                <div className="flex-1">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-1.5 text-white/70"><p.Icon size={22} />{p.tag}</span>
-                  <h3 className="mt-5 text-4xl font-bold leading-tight sm:text-5xl">{p.title}</h3>
-                  <p className="mt-2 text-lg font-semibold text-[#facc15]">{p.mechanism}</p>
-                  <p className="mt-4 max-w-lg text-lg leading-relaxed text-white/65">{p.text}</p>
-                </div>
-                <div className="flex-1"><Phone screen={p.screen} tilt={i % 2 ? "left" : "right"} /></div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 5. Three burning pains */}
-        <section className="px-5 py-20" aria-labelledby="pains">
-          <h2 id="pains" className="text-center text-4xl font-bold tracking-tight sm:text-5xl">Three costs you pay <span className="text-gold">every week</span></h2>
-          <div className="mx-auto mt-12 grid max-w-6xl gap-5 lg:grid-cols-3">
-            {PAINS.map((p) => (
-              <article key={p.kind} className="rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent p-7">
-                <p className="text-sm font-semibold uppercase tracking-widest text-[#facc15]">{p.kind} pain</p>
-                <p className="mt-3 text-lg text-white/70">{p.pain}</p>
-                <div className="mt-6 rounded-2xl bg-[#facc15]/10 p-4">
-                  <p className="font-semibold">Golden: {p.fix}</p>
-                  <p className="mt-1 text-white/65">{p.how}</p>
+          <p className="mt-4 text-center text-sm text-white/40">Estimate: USDA Economic Research Service.</p>
+          <div className="mx-auto mt-14 grid max-w-6xl gap-5 lg:grid-cols-3">
+            {WHY.map((c) => (
+              <article key={c.kind} className="rounded-[2.2rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent p-7">
+                <div className="flex items-center gap-3"><c.Icon size={44} /><h3 className="text-2xl font-bold">{c.kind}</h3></div>
+                <p className="mt-4 text-white/70">{c.pain}</p>
+                <div className="mt-5 rounded-2xl bg-[#facc15]/10 p-4">
+                  <p className="text-white/85">{c.fix}</p>
+                  <p className="mt-2 font-semibold text-[#fde68a]">{c.win}</p>
                 </div>
               </article>
             ))}
           </div>
         </section>
 
-        {/* 6. Feature → benefit, with value */}
-        <section className="px-5 py-20" aria-labelledby="stack">
-          <h2 id="stack" className="text-center text-4xl font-bold tracking-tight sm:text-5xl">Everything in the <span className="text-gold">Executive Chef System</span></h2>
-          <div className="mx-auto mt-12 max-w-4xl divide-y divide-white/10 overflow-hidden rounded-[2rem] border border-white/10">
-            {VALUE_STACK.map((v) => (
-              <div key={v.name} className="flex flex-col gap-2 p-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
-                <div>
-                  <h3 className="text-lg font-semibold">{v.name}</h3>
-                  <p className="mt-1 text-white/60">{v.benefit}</p>
-                </div>
-                <p className="shrink-0 text-white/50">Value <span className="font-semibold text-white">{money(v.value)}/yr</span></p>
-              </div>
-            ))}
-            <div className="flex items-center justify-between bg-[#facc15]/10 p-6 text-lg">
-              <span className="font-semibold">Total value</span>
-              <span><span className="mr-3 text-white/40 line-through">{money(totalValue)}/yr</span><span className="font-bold text-[#facc15]">{money(executive.price)}/yr founding price</span></span>
-            </div>
-          </div>
-        </section>
-
-        {/* 7. Value equation */}
-        <section className="px-5 py-20" aria-labelledby="equation">
-          <h2 id="equation" className="text-center text-4xl font-bold tracking-tight sm:text-5xl">More result. <span className="text-gold">Less of everything else.</span></h2>
-          <div className="mx-auto mt-12 grid max-w-5xl gap-4 sm:grid-cols-2">
-            {EQUATION.map(([t, d], i) => (
-              <article key={t} className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-7">
-                <p className="text-sm font-semibold uppercase tracking-widest text-white/40">{i < 2 ? "Maximized" : "Close to zero"}</p>
-                <h3 className="mt-2 text-2xl font-semibold">{t}</h3>
-                <p className="mt-2 text-white/60">{d}</p>
+        {/* 3. How: the benefits first, then the features that deliver them, then a free try */}
+        <section id="how" className="px-5 py-20" aria-labelledby="how-title">
+          <p className="text-center text-sm font-semibold uppercase tracking-widest text-[#facc15]">3 · How</p>
+          <h2 id="how-title" className="mx-auto mt-3 max-w-4xl text-center text-4xl font-bold tracking-tight sm:text-6xl">
+            What you get, <span className="text-gold">starting tonight</span>
+          </h2>
+          <div className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {BENEFITS.map((b) => (
+              <article key={b.title} className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
+                <b.Icon size={44} />
+                <h3 className="mt-4 text-xl font-semibold">{b.title}</h3>
+                <p className="mt-2 text-white/60">{b.text}</p>
               </article>
             ))}
           </div>
-        </section>
-
-        {/* 8. Milestones: chef ranks */}
-        <section className="px-5 py-20" aria-labelledby="ranks">
-          <h2 id="ranks" className="text-center text-4xl font-bold tracking-tight sm:text-6xl">Unlock golden milestones</h2>
-          <p className="mt-4 text-center text-lg text-white/60">Every dish you cook earns XP, keeps your streak and takes you up the brigade.</p>
-          <div className="mx-auto mt-12 flex max-w-6xl snap-x gap-4 overflow-x-auto pb-4 [scrollbar-width:none]">
+          <div className="mx-auto mt-6 flex max-w-6xl snap-x gap-3 overflow-x-auto pb-2 [scrollbar-width:none]" aria-label="Chef ranks you unlock">
             {RANKS.map((r, i) => (
-              <article key={r.title} className="flex min-w-[13rem] snap-start flex-col items-center rounded-[2rem] border border-white/10 px-5 py-8 text-center">
-                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff7cc,#facc15_40%,#a6761d_85%)] text-2xl font-black text-black/70 shadow-[0_0_40px_rgba(250,204,21,0.35)]" style={{ filter: `saturate(${0.5 + i * 0.12})` }}>{i + 1}</span>
-                <h3 className="mt-5 text-lg font-semibold">{r.title}</h3>
-                <p className="text-sm text-white/50">{r.xp} XP</p>
-              </article>
+              <span key={r.title} className="flex shrink-0 snap-start items-center gap-2 rounded-full border border-white/10 py-1.5 pl-1.5 pr-4 text-sm">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff7cc,#facc15_40%,#a6761d_85%)] text-xs font-black text-black/70">{i + 1}</span>
+                {r.title}
+              </span>
             ))}
           </div>
-          <div className="mx-auto mt-6 flex max-w-md items-center justify-center gap-6 text-white/60">
-            <span className="flex items-center gap-2"><TrophyIcon size={26} /> XP</span>
-            <span className="flex items-center gap-2"><FlameIcon size={26} /> Streaks</span>
-            <span className="flex items-center gap-2"><SteamingDishIcon size={26} /> Kitchen log</span>
+
+          <h3 className="mx-auto mt-24 max-w-4xl text-center text-3xl font-bold sm:text-5xl">The features that <span className="text-gold">make it happen</span></h3>
+          <div className="mx-auto mt-16 max-w-6xl space-y-28">
+            {FEATURES.map((f, i) => (
+              <div key={f.name} className={`flex flex-col items-center gap-14 md:flex-row ${i % 2 ? "md:flex-row-reverse" : ""}`}>
+                <div className="flex-1">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-1.5 text-white/70"><f.Icon size={22} />{f.benefit}</span>
+                  <h4 className="mt-5 text-4xl font-bold leading-tight sm:text-5xl">{f.name}</h4>
+                  <p className="mt-4 max-w-lg text-lg leading-relaxed text-white/65">{f.text}</p>
+                </div>
+                <div className="flex-1"><Phone screen={f.screen} tilt={i % 2 ? "left" : "right"} /></div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mx-auto mt-24 max-w-4xl overflow-hidden rounded-[2rem] border border-white/10">
+            <p className="bg-white/[0.04] p-6 text-lg font-semibold">Everything in the Executive Chef System</p>
+            <ul className="divide-y divide-white/10">
+              {INCLUDED.map((v) => (
+                <li key={v.name} className="flex items-center justify-between gap-6 px-6 py-4">
+                  <span>{v.name}</span>
+                  <span className="shrink-0 text-white/50">worth {money(v.value)}/yr</span>
+                </li>
+              ))}
+            </ul>
+            <p className="flex flex-wrap items-center justify-between gap-2 bg-[#facc15]/10 p-6 text-lg">
+              <span className="font-semibold">You pay</span>
+              <span><span className="mr-3 text-white/40 line-through">{money(totalValue)}/yr</span><span className="font-bold text-[#facc15]">{money(executive.price)}/yr founding price</span></span>
+            </p>
+          </div>
+
+          {/* Free value first: no sign-up, real recipes, right now */}
+          <div className="mx-auto mt-16 max-w-3xl rounded-[2.2rem] bg-white p-6 text-[#1f1d1b] sm:p-9">
+            <p className="text-sm font-semibold uppercase tracking-widest text-[#b45309]">Free, no sign-up</p>
+            <h3 className="mt-1 text-3xl font-bold">What&apos;s in your fridge right now?</h3>
+            <p className="mt-2 text-[#57534e]">Type it in and see what you could cook tonight instead of throwing it away.</p>
+            <PantryMatcher recipes={recipes} />
           </div>
         </section>
 
-        {/* 9. Decoy vs Grand Slam */}
-        <section className="px-5 py-20" aria-labelledby="contrast">
-          <h2 id="contrast" className="text-center text-4xl font-bold tracking-tight sm:text-5xl">A recipe app vs. <span className="text-gold">a kitchen system</span></h2>
-          <div className="mx-auto mt-12 max-w-5xl overflow-x-auto rounded-[2rem] border border-white/10">
-            <table className="w-full min-w-[640px] text-left">
-              <thead className="bg-white/[0.04] text-sm uppercase tracking-wide text-white/50">
-                <tr><th className="p-5 font-semibold" scope="col"><span className="sr-only">Dimension</span></th><th className="p-5 font-semibold" scope="col">Typical cooking class or app</th><th className="p-5 font-semibold text-[#facc15]" scope="col">Golden Executive Chef System</th></tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {COMPARE.map(([d, them, us]) => (
-                  <tr key={d}><th scope="row" className="p-5 font-semibold">{d}</th><td className="p-5 text-white/50">{them}</td><td className="p-5"><span className="mr-2 text-[#facc15]">✓</span>{us}</td></tr>
-                ))}
-              </tbody>
-            </table>
+        {/* 4. Price: anchored against what waste costs, clear timeline, real scarcity, no risk */}
+        <section id="pricing" className="px-5 py-20" aria-labelledby="pricing-title">
+          <p className="text-center text-sm font-semibold uppercase tracking-widest text-[#facc15]">4 · Price</p>
+          <h2 id="pricing-title" className="mt-3 text-center text-4xl font-bold tracking-tight sm:text-6xl">Less than <span className="text-gold">one week of waste</span></h2>
+          <div className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
+            <p className="rounded-2xl border border-white/10 p-4 text-center"><span className="block text-3xl font-bold">{money(wastePerWeek)}</span><span className="text-sm text-white/55">food the average family bins each week</span></p>
+            <p className="rounded-2xl border border-white/10 p-4 text-center"><span className="block text-3xl font-bold">1 steak</span><span className="text-sm text-white/55">ruined costs more than a month of Golden</span></p>
+            <p className="rounded-2xl border-2 border-[#facc15] p-4 text-center"><span className="block text-3xl font-bold text-[#facc15]">{perMonth(executive)}</span><span className="text-sm text-white/55">a month for Golden, billed yearly</span></p>
           </div>
-        </section>
-
-        {/* 10. Pricing: attraction, decoy, grand slam */}
-        <section id="pricing" className="scroll-mt-28 px-5 py-20" aria-labelledby="pricing-title">
-          <h2 id="pricing-title" className="text-center text-4xl font-bold tracking-tight sm:text-6xl">Choose how you <span className="text-gold">cook tonight</span></h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-white/60">
-            {perMonth(executive)} a month: less than a single takeout dinner, for a year of hot, on-time meals.
-          </p>
 
           <div className="mx-auto mt-14 grid max-w-6xl items-start gap-5 lg:grid-cols-3">
             <PriceCard
@@ -360,9 +324,10 @@ export default async function LandingPage() {
               sub="Start here, free"
               price="$0"
               per=""
-              note="Then pick a plan, or cancel"
-              items={["Day 1: the 5-minute Crisper Drawer Audit", "Day 2: 3 master sauces for random ingredients", "Day 3: a two-dish dinner in under 30 minutes", "Full Executive features for all 3 days"]}
-              cta="Start the challenge"
+              note="Everything unlocked for 3 days"
+              benefits={["See what you'd save, before you pay a cent"]}
+              items={["Day 1: a 5-minute fridge check and dinner from what you have", "Day 2: 3 master sauces for random ingredients", "Day 3: a two-dish dinner in under 30 minutes"]}
+              cta="Start free"
             />
             <PriceCard
               name={experience.name}
@@ -370,6 +335,7 @@ export default async function LandingPage() {
               price={money(experience.price)}
               per="/year"
               note={`${perMonth(experience)}/month, billed yearly`}
+              benefits={PLAN_BENEFITS.experience}
               items={experience.includes}
               missing={experience.excludes}
               cta="Choose Experience"
@@ -377,49 +343,47 @@ export default async function LandingPage() {
             <PriceCard
               featured
               name={executive.name}
-              sub="The complete kitchen system"
+              sub="Stop the waste for good"
               price={money(executive.price)}
               was={executive.regularPrice ? money(executive.regularPrice) : undefined}
               per="/year"
               note={`${perMonth(executive)}/month · ${pct}% off for founding members`}
+              benefits={PLAN_BENEFITS.executive}
               items={executive.includes}
               cta="Claim my founding spot"
             />
           </div>
 
-          {/* Scarcity: real spots count and a fixed end date */}
-          <div className="mx-auto mt-14 max-w-3xl rounded-[2rem] border border-[#facc15]/30 bg-[#facc15]/[0.06] p-7 text-center">
-            <p className="text-sm font-semibold uppercase tracking-widest text-[#facc15]">Founding price ends {endDate}</p>
-            <p className="mt-2 text-2xl font-semibold">
-              {launch.taken.toLocaleString("en-US")} of {launch.spots.toLocaleString("en-US")} founding spots taken
-            </p>
-            <div className="mx-auto mt-4 h-3 max-w-lg overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={launch.spots} aria-valuenow={launch.taken} aria-label="Founding spots taken">
-              <div className="h-full rounded-full bg-gradient-to-r from-[#a6761d] to-[#facc15]" style={{ width: `${Math.max(1, (launch.taken / launch.spots) * 100)}%` }} />
+          <div className="mx-auto mt-14 grid max-w-5xl gap-5 lg:grid-cols-2">
+            <div className="rounded-[2rem] border border-white/10 p-7">
+              <h3 className="text-2xl font-semibold">How your free days work</h3>
+              <p className="mt-1 text-white/60">No surprises: here&apos;s exactly what happens and when.</p>
+              <div className="mt-6"><TrialTimeline days={ATTRACTION.days} price={`${money(executive.price)} for the year`} tone="dark" /></div>
             </div>
-            <div className="mt-6"><Countdown endsAt={launch.endsAt} /></div>
-            <p className="mt-5 text-white/60">When the spots or the clock run out, the Executive Chef System goes back to {money(executive.regularPrice ?? executive.price)}/year. Founding members keep {money(executive.price)}/year for as long as they stay.</p>
+            <div className="rounded-[2rem] border border-[#facc15]/30 bg-[#facc15]/[0.06] p-7 text-center">
+              <p className="text-sm font-semibold uppercase tracking-widest text-[#facc15]">Founding price ends {endDate}</p>
+              <p className="mt-2 text-2xl font-semibold">{launch.taken.toLocaleString("en-US")} of {launch.spots.toLocaleString("en-US")} founding spots taken</p>
+              <div className="mx-auto mt-4 h-3 max-w-sm overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={launch.spots} aria-valuenow={launch.taken} aria-label="Founding spots taken">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#a6761d] to-[#facc15]" style={{ width: `${Math.max(1, (launch.taken / launch.spots) * 100)}%` }} />
+              </div>
+              <div className="mt-6"><Countdown endsAt={launch.endsAt} /></div>
+              <p className="mt-5 text-sm text-white/60">Then the Executive Chef System goes back to {money(executive.regularPrice ?? executive.price)}/year. Founding members keep {money(executive.price)}/year for as long as they stay.</p>
+            </div>
+          </div>
+
+          <div id="guarantee" className="mx-auto mt-5 max-w-5xl rounded-[2rem] bg-gradient-to-b from-[#2a2208] to-[#0c0a05] p-7 sm:flex sm:items-center sm:gap-7 sm:p-9">
+            <span aria-hidden className="mx-auto flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff7cc,#facc15_45%,#a6761d)] text-3xl font-black text-black/75 sm:mx-0">{GUARANTEE.dishes}</span>
+            <div className="mt-4 text-center sm:mt-0 sm:text-left">
+              <h3 className="text-2xl font-bold">The {GUARANTEE.dishes} Perfect Dishes <span className="text-gold">Money-Back Guarantee</span></h3>
+              <p className="mt-2 text-white/70">Cook {GUARANTEE.dishes} meals with Golden. If they don&apos;t land hot and on time, you never rescue a mistake, and your weekly waste doesn&apos;t drop, send us your session log within {GUARANTEE.days} days for a 100% refund. <Link href="/guarantee" className="underline">Full terms</Link></p>
+            </div>
           </div>
         </section>
 
-        {/* 11. Risk reversal */}
-        <section id="guarantee" className="scroll-mt-28 px-5 py-20" aria-labelledby="guarantee-title">
-          <div className="mx-auto max-w-4xl rounded-[2.5rem] bg-gradient-to-b from-[#2a2208] to-[#0c0a05] p-8 text-center sm:p-14">
-            <span aria-hidden className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff7cc,#facc15_45%,#a6761d)] text-4xl font-black text-black/75">10</span>
-            <h2 id="guarantee-title" className="mt-6 text-3xl font-bold sm:text-5xl">The 10 Perfect Dishes <span className="text-gold">Money-Back Guarantee</span></h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">We take on the risk. Cook {GUARANTEE.dishes} full meals with Golden. If you don&apos;t:</p>
-            <ol className="mx-auto mt-6 max-w-xl space-y-3 text-left text-lg">
-              {["Get every dish on the table on time, all of it hot,", "Rescue at least one mistake with the AI Doctor, and", "See a real drop in your weekly food waste,"].map((t, i) => (
-                <li key={t} className="flex gap-3 rounded-2xl bg-white/5 p-4"><span className="font-bold text-[#facc15]">{i + 1}.</span>{t}</li>
-              ))}
-            </ol>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-white/70">send us your session log within {GUARANTEE.days} days of purchase and get a <strong className="text-white">100% refund</strong>. No friction, no hard feelings. You keep every guide and cheat sheet.</p>
-            <Link href="/guarantee" className="mt-5 inline-block text-white/60 underline">Full guarantee terms</Link>
-          </div>
-        </section>
-
-        {/* 12. FAQ */}
-        <section id="faq" className="scroll-mt-28 px-5 py-20" aria-labelledby="faq-title">
-          <h2 id="faq-title" className="bg-gradient-to-b from-white to-white/45 bg-clip-text text-center text-5xl font-bold text-transparent sm:text-7xl">FAQ</h2>
+        {/* 5. Questions, then one last clear step */}
+        <section id="faq" className="px-5 py-20" aria-labelledby="faq-title">
+          <p className="text-center text-sm font-semibold uppercase tracking-widest text-[#facc15]">5 · Questions</p>
+          <h2 id="faq-title" className="mt-3 text-center text-4xl font-bold tracking-tight sm:text-5xl">Good questions</h2>
           <div className="mx-auto mt-12 max-w-3xl space-y-4">
             {FAQ.map(([q, a]) => (
               <details key={q} className="group rounded-[1.6rem] border border-white/10 bg-white/[0.03] px-7 py-6 open:bg-white/[0.05]">
@@ -431,14 +395,13 @@ export default async function LandingPage() {
               </details>
             ))}
           </div>
-        </section>
 
-        {/* 13. Final call to action */}
-        <section className="px-5 pb-24 pt-10 text-center">
-          <h2 className="mx-auto max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">On iPhone, Android <span className="text-gold">and the web</span></h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-white/60">Better than another recipe app. Golden runs your kitchen, so dinner gets made and you get your evening back.</p>
-          <Link href="/signin" className="mt-9 inline-block rounded-full bg-[#facc15] px-10 py-4 text-lg font-semibold text-black transition hover:bg-[#fde047]">Start free for {ATTRACTION.days} days</Link>
-          <p className="mt-4 text-sm text-white/50">Already a member? <Link href="/signin" className="underline">Sign in</Link></p>
+          <div className="mx-auto mt-20 max-w-3xl text-center">
+            <h2 className="text-4xl font-bold leading-tight sm:text-5xl">Tonight&apos;s dinner, <span className="text-gold">from what you already have</span></h2>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-white/60">Start free, cook something good tonight, and decide in {ATTRACTION.days} days. On iPhone, Android and the web.</p>
+            <Link href="/signin" className="mt-8 inline-block rounded-full bg-[#facc15] px-10 py-4 text-lg font-semibold text-black transition hover:bg-[#fde047]">Start free: $0 today</Link>
+            <p className="mt-4 text-sm text-white/50">Already a member? <Link href="/signin" className="underline">Sign in</Link></p>
+          </div>
         </section>
       </main>
 
@@ -457,7 +420,7 @@ export default async function LandingPage() {
   );
 }
 
-function PriceCard({ name, sub, price, was, per, note, items, missing = [], cta, featured }: { name: string; sub: string; price: string; was?: string; per: string; note: string; items: string[]; missing?: string[]; cta: string; featured?: boolean }) {
+function PriceCard({ name, sub, price, was, per, note, benefits, items, missing = [], cta, featured }: { name: string; sub: string; price: string; was?: string; per: string; note: string; benefits: string[]; items: string[]; missing?: string[]; cta: string; featured?: boolean }) {
   return (
     <article className={`relative rounded-[2.2rem] p-7 ${featured ? "border-2 border-[#facc15] bg-gradient-to-b from-[#241d07] to-[#0b0a06] shadow-[0_0_60px_-10px_rgba(250,204,21,0.35)] lg:-mt-6" : "border border-white/10 bg-gradient-to-b from-[#121212] to-black"}`}>
       {featured && <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#facc15] px-4 py-1 text-sm font-bold text-black">Best value · 80% off</span>}
@@ -469,11 +432,17 @@ function PriceCard({ name, sub, price, was, per, note, items, missing = [], cta,
         <span className="pb-2 text-xl font-semibold">{per}</span>
       </p>
       <p className="mt-3 border-t border-white/10 pt-3 text-center text-sm text-white/50">{note}</p>
-      <ul className="mt-6 space-y-3">
+      <p className="mt-6 text-sm font-semibold uppercase tracking-wide text-white/50">What you get</p>
+      <ul className="mt-3 space-y-2">
+        {benefits.map((b) => <li key={b} className="flex gap-3 text-lg font-semibold"><span aria-hidden className="text-[#facc15]">★</span><span>{b}</span></li>)}
+      </ul>
+      <p className="mt-6 text-sm font-semibold uppercase tracking-wide text-white/50">What&apos;s inside</p>
+      <ul className="mt-3 space-y-3">
         {items.map((i) => <li key={i} className="flex gap-3"><span aria-hidden className="text-[#facc15]">✓</span><span className="text-white/85">{i}</span></li>)}
         {missing.map((i) => <li key={i} className="flex gap-3 text-white/35"><span aria-hidden>✕</span><span className="line-through">{i}</span></li>)}
       </ul>
-      <Link href="/signin" className={`mt-8 flex min-h-14 items-center justify-center rounded-full text-lg font-semibold transition ${featured ? "bg-[#facc15] text-black hover:bg-[#fde047]" : "border border-white/20 hover:bg-white/10"}`}>{cta}</Link>
+      <Link href="/signin" className={`mt-8 flex min-h-14 flex-col items-center justify-center rounded-full text-lg font-semibold transition ${featured ? "bg-[#facc15] text-black hover:bg-[#fde047]" : "border border-white/20 hover:bg-white/10"}`}>{cta}</Link>
+      <p className="mt-2 text-center text-xs text-white/45">$0 today · cancel before day {ATTRACTION.days} ends, pay nothing</p>
     </article>
   );
 }

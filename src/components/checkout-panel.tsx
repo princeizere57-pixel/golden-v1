@@ -10,6 +10,8 @@ import { startCheckout, type StartCheckout } from "@/app/actions/checkout";
 import { enterGiveaway, type EntryResult } from "@/app/actions/giveaway";
 import { finishJourney, setDemoPlan } from "@/app/actions/viewer";
 import { MiniYou } from "@/components/mini-you";
+import { TrialTimeline } from "@/components/trial-timeline";
+import { ATTRACTION } from "@/lib/billing/offers";
 import { track } from "@/lib/analytics";
 
 const WhopEmbed = dynamic(() => import("@/components/whop-embed").then((m) => m.WhopEmbed), { ssr: false });
@@ -103,31 +105,6 @@ export function CheckoutPanel({ user, level, premium, offers, defaultOffer, laun
       </ul>
 
       {/* 2. Attraction offer */}
-      <section className="mt-7 rounded-3xl bg-charcoal p-5 text-white" aria-labelledby="ga">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#facc15]">Free bonus: The Golden Giveaway</p>
-        <h2 id="ga" className="mt-1 text-xl font-bold">Win a free year, and one for the friend who invited you</h2>
-        <p className="mt-1 text-sm text-white/80">Free to enter, no purchase needed. Draw on {drawDate}. <Link href="/giveaway" className="underline">Rules</Link></p>
-        {entry?.ok ? (
-          <div className="mt-3 rounded-2xl bg-white/10 p-3 text-sm">
-            <p>You&apos;re in! Share your link. If a friend who joins through it wins, you win a year too.</p>
-            <div className="mt-2 flex gap-2">
-              <input readOnly value={shareUrl} className="min-h-11 flex-1 rounded-xl bg-white px-3 text-ink" aria-label="Your referral link" onFocus={(e) => e.currentTarget.select()} />
-              <button
-                onClick={() => (navigator.share ? navigator.share({ title: "Golden", text: "Learn to cook at your level with Golden", url: shareUrl }).catch(() => {}) : navigator.clipboard.writeText(shareUrl))}
-                className="min-h-11 rounded-xl bg-[#facc15] px-4 font-semibold text-[#1f1d1b]"
-              >
-                Share
-              </button>
-            </div>
-            <p className="mt-2 text-white/70">{entry.referrals} friend{entry.referrals === 1 ? "" : "s"} joined through your link.</p>
-          </div>
-        ) : (
-          <>
-            <button onClick={join} disabled={pending} className="mt-3 min-h-12 w-full rounded-full bg-[#facc15] font-semibold text-[#1f1d1b] disabled:opacity-60">Enter the giveaway</button>
-            {entry && !entry.ok && <p className="mt-2 text-sm text-white/80" role="alert">{entry.error}</p>}
-          </>
-        )}
-      </section>
 
       {/* 3. Plans and upgrades */}
       {launch.open && (
@@ -153,6 +130,12 @@ export function CheckoutPanel({ user, level, premium, offers, defaultOffer, laun
         </label>
       )}
 
+      {/* Transparency: exactly what happens and when, before anyone pays */}
+      <section className="mt-6 rounded-3xl border border-line p-5" aria-labelledby="free-days">
+        <h2 id="free-days" className="font-semibold">How your free days work</h2>
+        <div className="mt-4"><TrialTimeline days={ATTRACTION.days} price={offer.priceLine.replace(/^.*then /, "")} /></div>
+      </section>
+
       {/* 4. Payment */}
       <section className="mt-6" aria-label="Payment">
         {session ? (
@@ -176,6 +159,32 @@ export function CheckoutPanel({ user, level, premium, offers, defaultOffer, laun
         <p className="mt-3 text-center text-xs text-muted">Secure payment by Whop. Cancel any time before your trial ends and you won&apos;t be charged.</p>
         {chosen === "executive" && (
           <p className="mt-2 text-center text-xs text-muted">Backed by the <Link href="/guarantee" className="underline">10 Perfect Dishes Money-Back Guarantee</Link>.</p>
+        )}
+      </section>
+
+      <section className="mt-7 rounded-3xl bg-charcoal p-5 text-white" aria-labelledby="ga">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#facc15]">Free bonus: The Golden Giveaway</p>
+        <h2 id="ga" className="mt-1 text-xl font-bold">Win a free year, and one for the friend who invited you</h2>
+        <p className="mt-1 text-sm text-white/80">Free to enter, no purchase needed. Draw on {drawDate}. <Link href="/giveaway" className="underline">Rules</Link></p>
+        {entry?.ok ? (
+          <div className="mt-3 rounded-2xl bg-white/10 p-3 text-sm">
+            <p>You&apos;re in! Share your link. If a friend who joins through it wins, you win a year too.</p>
+            <div className="mt-2 flex gap-2">
+              <input readOnly value={shareUrl} className="min-h-11 flex-1 rounded-xl bg-white px-3 text-ink" aria-label="Your referral link" onFocus={(e) => e.currentTarget.select()} />
+              <button
+                onClick={() => (navigator.share ? navigator.share({ title: "Golden", text: "Learn to cook at your level with Golden", url: shareUrl }).catch(() => {}) : navigator.clipboard.writeText(shareUrl))}
+                className="min-h-11 rounded-xl bg-[#facc15] px-4 font-semibold text-[#1f1d1b]"
+              >
+                Share
+              </button>
+            </div>
+            <p className="mt-2 text-white/70">{entry.referrals} friend{entry.referrals === 1 ? "" : "s"} joined through your link.</p>
+          </div>
+        ) : (
+          <>
+            <button onClick={join} disabled={pending} className="mt-3 min-h-12 w-full rounded-full bg-[#facc15] font-semibold text-[#1f1d1b] disabled:opacity-60">Enter the giveaway</button>
+            {entry && !entry.ok && <p className="mt-2 text-sm text-white/80" role="alert">{entry.error}</p>}
+          </>
         )}
       </section>
 
