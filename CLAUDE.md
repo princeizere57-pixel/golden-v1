@@ -149,3 +149,12 @@ These set The Chef's AI apart; keep them original (no third-party mascots, icon 
 - **Feedback on every tap:** buttons and links press in slightly (`globals.css`, off under reduced motion). Visible focus ring everywhere.
 - **Focus while cooking:** no upsell in the header in cook mode; controls on the dark theme need visible borders.
 - **Honest persuasion:** scarcity and countdowns must be real (the founding spots count comes from Supabase and the end date is fixed); no made-up statistics, any figure needs a source.
+
+## 15. Audience and message (both repos)
+
+- **Who we talk to:** people losing money in the kitchen: groceries they throw away, expensive cuts they ruin, takeaways after stressful multi-dish dinners. Lead with the money they keep, then well-being, then their people. Levelling up is the bonus, not the pitch.
+- **Copy is about them:** "Your money / Your well-being / Your people", second person, specific ("dinner in about 30 minutes", "Cancel before Nov 13 and you pay nothing"). Only sourced figures (USDA: ~$1,500/yr food waste for a family of four).
+- **Headline:** `HeadlineTicker` ("Cook with Confidence ✦ Waste Nothing ✦ Level Up" gliding along a line; real `<h1>` for screen readers; static under reduced motion). Used on `/welcome` and `/landing`.
+- **Lessons applied from uxpeak's videos:** value first (free Pantry-to-Plate try on `/landing`, no sign-up), transparency (`TrialTimeline` on checkout and landing: Today → day 2 → first charge on a real date), contrast/anchoring (price next to what a week of waste costs), loss aversion ("use it before you lose it"), goal gradient (onboarding bar starts with sign-up counted), low friction (tap answers, one primary action).
+- **Phone mockups** (`components/landing/phone.tsx`): status bar (time, signal, Wi-Fi, battery) with the Dynamic Island, the screenshot only in the app area, home indicator below. Never stretch a screenshot over the whole glass.
+- **`/landing` (golden-v1) has five numbered sections:** 1 What it costs you, 2 How Golden fixes it, 3 Golden vs. the usual, 4 Price (anchor, plans, free-days timeline, real founding spots, guarantee), 5 Questions. Merge new material into one of these instead of adding sections.
