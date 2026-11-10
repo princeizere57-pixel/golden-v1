@@ -4,6 +4,7 @@ import { PhotoCard, Rail } from "@/components/discover";
 import { KitchenLog } from "@/components/kitchen-log";
 import { forLevel, libraryRecipes } from "@/lib/library";
 import { difficulty } from "@/lib/skill/difficulty";
+import { can } from "@/lib/billing/entitlements";
 import { getViewer } from "@/lib/viewer";
 
 export const metadata: Metadata = { title: "For you" };
@@ -45,16 +46,16 @@ export default async function ForYouPage() {
           <Link href="/onboarding" className="underline">Retake the quiz</Link>
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-          <Link href="/pantry" className="col-span-2 rounded-2xl bg-accent-soft p-4 md:col-span-1">
-            <span className="block text-xs font-semibold uppercase tracking-wide text-muted">Pantry-to-Plate</span>
+          <Link href={can(viewer.tier, "pantry") ? "/pantry" : "/checkout?plan=executive"} className="col-span-2 rounded-2xl bg-accent-soft p-4 md:col-span-1">
+            <span className="block text-xs font-semibold uppercase tracking-wide text-muted">Pantry-to-Plate{!can(viewer.tier, "pantry") && <ExecBadge />}</span>
             <span className="mt-1 block font-semibold leading-snug">Turn your leftovers into dinner</span>
           </Link>
           <Link href="/challenge" className="rounded-2xl bg-charcoal p-4 text-white">
             <span className="block text-xs font-semibold uppercase tracking-wide text-[#facc15]">Start here</span>
             <span className="mt-1 block font-semibold leading-snug">3-Day Zero-Waste Challenge</span>
           </Link>
-          <Link href="/modules" className="rounded-2xl border-2 border-button p-4">
-            <span className="block text-xs font-semibold uppercase tracking-wide text-muted">Technique</span>
+          <Link href={can(viewer.tier, "modules") ? "/modules" : "/checkout?plan=executive"} className="rounded-2xl border-2 border-button p-4">
+            <span className="block text-xs font-semibold uppercase tracking-wide text-muted">Technique{!can(viewer.tier, "modules") && <ExecBadge />}</span>
             <span className="mt-1 block font-semibold leading-snug">Chinese, Korean &amp; Italian modules</span>
           </Link>
         </div>
@@ -85,3 +86,5 @@ export default async function ForYouPage() {
     </main>
   );
 }
+
+const ExecBadge = () => <span className="ml-2 rounded-full bg-button px-2 py-0.5 text-[10px] font-bold normal-case text-button-ink">Executive</span>;

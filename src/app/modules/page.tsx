@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LockedPage } from "@/components/plan-lock";
+import { can } from "@/lib/billing/entitlements";
+import { getViewer } from "@/lib/viewer";
 
 export const metadata: Metadata = { title: "Culinary Arts Modules" };
 
@@ -42,7 +45,8 @@ const MODULES = [
   },
 ];
 
-export default function ModulesPage() {
+export default async function ModulesPage() {
+  if (!can((await getViewer()).tier, "modules")) return <LockedPage feature="modules" heading="Culinary Arts Modules" back={{ href: "/for-you", label: "Back to For you" }} />;
   return (
     <main className="mx-auto px-4 pb-12 pt-6">
       <h1 className="font-display text-[2.2rem]">Culinary <span className="text-accent">Arts</span> Modules</h1>
