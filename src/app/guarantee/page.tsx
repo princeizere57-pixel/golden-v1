@@ -5,13 +5,12 @@ import { GUARANTEE, money, offerById } from "@/lib/billing/offers";
 export const metadata: Metadata = { title: "Money-back guarantee" };
 
 export default function GuaranteePage() {
-  const year = offerById("year")!;
-  const month = offerById("month")!;
+  const executive = offerById("executive")!;
   return (
     <main className="mx-auto px-5 pb-12 pt-8">
       <Link href="/" className="text-sm underline">← Back</Link>
       <h1 className="mt-4 font-display text-[2rem]">The 10 Perfect Dishes <span className="text-accent">Money-Back Guarantee</span></h1>
-      <p className="mt-3 text-muted">Applies to both paid plans: {year.name} ({money(year.price)}/year) and {month.name} ({money(month.price)}/month).</p>
+      <p className="mt-3 text-muted">Applies to the Golden Executive Chef System ({money(executive.price)}/year founding price).</p>
 
       <h2 className="mt-8 text-xl font-semibold">What you do</h2>
       <p className="mt-2">Cook {GUARANTEE.dishes} full meals with Golden (cook mode or Plan a meal). Golden keeps a session log of every meal you cook on your Kitchen log.</p>

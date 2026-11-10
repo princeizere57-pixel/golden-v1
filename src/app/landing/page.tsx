@@ -3,18 +3,20 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { FlameIcon, HatIcon, LifebuoyIcon, PanFireIcon, SteamingDishIcon, TrophyIcon } from "@/components/icons-3d";
+import { Countdown } from "@/components/landing/countdown";
 import { Phone, type Screen } from "@/components/landing/phone";
 import { Brand } from "@/components/site-chrome";
-import { ATTRACTION, GUARANTEE, money, offerById, perMonth, yearlySaving } from "@/lib/billing/offers";
+import { launchState } from "@/lib/billing/launch";
+import { ATTRACTION, GUARANTEE, money, offerById, percentOff, perMonth } from "@/lib/billing/offers";
 import { RANKS } from "@/lib/gamify";
 
 export const metadata: Metadata = {
-  title: "Golden · The kitchen coach that gets dinner on the table",
+  title: "Golden · The Executive Chef System for your kitchen",
   description: "For the professional or parent walking in at 7 PM: turn leftovers into dinner, rescue mistakes in seconds, and land every dish hot at the same minute.",
 };
 
-const year = offerById("year")!;
-const month = offerById("month")!;
+const executive = offerById("executive")!;
+const experience = offerById("experience")!;
 
 /** Every part of the page, listed at the top so visitors can jump straight to it. */
 const SECTIONS = [
@@ -135,25 +137,28 @@ const COMPARE = [
 ];
 
 const FAQ = [
-  ["What happens in the free 3-Day Zero-Waste Challenge?", "For three days you get all of Golden for free. Day 1: a 5-minute crisper-drawer audit. Day 2: three master sauces that tie random ingredients together. Day 3: a two-dish dinner, timed by the orchestrator, on the table in under 30 minutes. Cancel before day 3 ends and you pay nothing."],
-  ["What's the difference between the two plans?", `Nothing but how you pay. ${year.name} and ${month.name} both include every feature. ${year.name} is ${money(year.price)} once a year (${perMonth(year)} a month); ${month.name} is ${money(month.price)} a month and you can stop any time.`],
-  ["Why is the yearly plan cheaper?", `Paying for the year up front saves ${money(yearlySaving().amount)} (${yearlySaving().pct}%) compared with twelve monthly payments. Both plans start with the same ${ATTRACTION.days} free days.`],
+  ["What happens in the free 3-Day Zero-Waste Challenge?", "For three days you get the full Executive Chef System for free. Day 1: a 5-minute crisper-drawer audit. Day 2: three master sauces that tie random ingredients together. Day 3: a two-dish dinner, timed by the orchestrator, on the table in under 30 minutes. Cancel before day 3 ends and you pay nothing."],
+  ["What's the difference between the two plans?", `The Golden Experience (${money(experience.price)}/year) gives you skill-adapted recipes and cook mode, one dish at a time. The Golden Executive Chef System (${money(executive.price)}/year) adds the Multi-Dish Timing Orchestrator, the Fix My Mistake AI Doctor, the Pantry-to-Plate Matcher, the cuisine modules and the money-back guarantee.`],
+  ["Why is it 80% off?", `The founding price is for the first 5,000 members only, until the countdown ends. After that, the Executive Chef System is ${money(executive.regularPrice ?? executive.price)}/year. Founding members keep their price for as long as they stay subscribed.`],
   ["How does the money-back guarantee work?", `Cook ${GUARANTEE.dishes} full meals with Golden. If you don't get every dish on the table hot and on time, rescue at least one mistake with the AI Doctor, and see a real drop in your weekly food waste, send us your session log within ${GUARANTEE.days} days of purchase for a 100% refund.`],
   ["How do I cancel?", "Any time, in two taps, from your Whop account. Cancel during the free challenge and you're never charged."],
   ["Does it work on my phone?", "Yes. Golden runs on iPhone, Android and any computer browser, and cook mode keeps your screen awake while you cook."],
 ];
 
-export default function LandingPage() {
-  const saving = yearlySaving();
+export default async function LandingPage() {
+  const launch = await launchState();
+  const pct = percentOff(executive);
+  const endDate = new Date(launch.endsAt).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
   const totalValue = VALUE_STACK.reduce((s, v) => s + v.value, 0);
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-black font-sans text-white [&_[id]]:scroll-mt-44">
       <header className="sticky top-0 z-40 bg-black/85 backdrop-blur-xl">
-        {/* The offer in one line, always at the top: the same plans as the app's checkout */}
+        {/* Countdown and founding spots left, always at the top */}
         <a href="#pricing" className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-[#facc15] px-3 py-2 text-center text-sm font-semibold text-black">
-          <span>{ATTRACTION.days} days free, then {money(year.price)}/year or {money(month.price)}/month</span>
-          <span className="rounded-full bg-black px-2.5 py-0.5 text-[#facc15]">Save {saving.pct}% yearly</span>
+          <span>{launch.open ? `${pct}% off founding price ends in` : "Founding price"}</span>
+          <Countdown endsAt={launch.endsAt} compact />
+          <span className="rounded-full bg-black px-2.5 py-0.5 text-[#facc15]">{launch.left.toLocaleString("en-US")} of {launch.spots.toLocaleString("en-US")} spots left</span>
         </a>
         <nav aria-label="Main" className="mx-auto flex max-w-6xl items-center justify-between px-4 pt-3 sm:px-6">
           <Link href="/landing" aria-label="Golden home"><Brand className="text-2xl text-white sm:text-3xl" /></Link>
@@ -273,7 +278,7 @@ export default function LandingPage() {
 
         {/* 6. Feature → benefit, with value */}
         <section className="px-5 py-20" aria-labelledby="stack">
-          <h2 id="stack" className="text-center text-4xl font-bold tracking-tight sm:text-5xl">Everything in <span className="text-gold">Golden</span></h2>
+          <h2 id="stack" className="text-center text-4xl font-bold tracking-tight sm:text-5xl">Everything in the <span className="text-gold">Executive Chef System</span></h2>
           <div className="mx-auto mt-12 max-w-4xl divide-y divide-white/10 overflow-hidden rounded-[2rem] border border-white/10">
             {VALUE_STACK.map((v) => (
               <div key={v.name} className="flex flex-col gap-2 p-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
@@ -286,7 +291,7 @@ export default function LandingPage() {
             ))}
             <div className="flex items-center justify-between bg-[#facc15]/10 p-6 text-lg">
               <span className="font-semibold">Total value</span>
-              <span><span className="mr-3 text-white/40 line-through">{money(totalValue)}/yr</span><span className="font-bold text-[#facc15]">{money(year.price)}/yr with {year.name}</span></span>
+              <span><span className="mr-3 text-white/40 line-through">{money(totalValue)}/yr</span><span className="font-bold text-[#facc15]">{money(executive.price)}/yr founding price</span></span>
             </div>
           </div>
         </section>
@@ -331,7 +336,7 @@ export default function LandingPage() {
           <div className="mx-auto mt-12 max-w-5xl overflow-x-auto rounded-[2rem] border border-white/10">
             <table className="w-full min-w-[640px] text-left">
               <thead className="bg-white/[0.04] text-sm uppercase tracking-wide text-white/50">
-                <tr><th className="p-5 font-semibold" scope="col"><span className="sr-only">Dimension</span></th><th className="p-5 font-semibold" scope="col">Typical cooking class or app</th><th className="p-5 font-semibold text-[#facc15]" scope="col">Golden</th></tr>
+                <tr><th className="p-5 font-semibold" scope="col"><span className="sr-only">Dimension</span></th><th className="p-5 font-semibold" scope="col">Typical cooking class or app</th><th className="p-5 font-semibold text-[#facc15]" scope="col">Golden Executive Chef System</th></tr>
               </thead>
               <tbody className="divide-y divide-white/10">
                 {COMPARE.map(([d, them, us]) => (
@@ -346,7 +351,7 @@ export default function LandingPage() {
         <section id="pricing" className="scroll-mt-28 px-5 py-20" aria-labelledby="pricing-title">
           <h2 id="pricing-title" className="text-center text-4xl font-bold tracking-tight sm:text-6xl">Choose how you <span className="text-gold">cook tonight</span></h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-white/60">
-            {perMonth(year)} a month on {year.name}: less than a single takeout dinner, for a year of hot, on-time meals.
+            {perMonth(executive)} a month: less than a single takeout dinner, for a year of hot, on-time meals.
           </p>
 
           <div className="mx-auto mt-14 grid max-w-6xl items-start gap-5 lg:grid-cols-3">
@@ -356,32 +361,44 @@ export default function LandingPage() {
               price="$0"
               per=""
               note="Then pick a plan, or cancel"
-              items={["Day 1: the 5-minute Crisper Drawer Audit", "Day 2: 3 master sauces for random ingredients", "Day 3: a two-dish dinner in under 30 minutes", "Every Golden feature for all 3 days"]}
+              items={["Day 1: the 5-minute Crisper Drawer Audit", "Day 2: 3 master sauces for random ingredients", "Day 3: a two-dish dinner in under 30 minutes", "Full Executive features for all 3 days"]}
               cta="Start the challenge"
             />
             <PriceCard
-              name={month.name}
-              sub="Pay as you go"
-              price={money(month.price)}
-              per="/month"
-              note="Cancel any time"
-              items={month.includes}
-              cta={`Choose ${month.name}`}
+              name={experience.name}
+              sub="One dish at a time"
+              price={money(experience.price)}
+              per="/year"
+              note={`${perMonth(experience)}/month, billed yearly`}
+              items={experience.includes}
+              missing={experience.excludes}
+              cta="Choose Experience"
             />
             <PriceCard
               featured
-              badge={`${year.badge} · save ${saving.pct}%`}
-              name={year.name}
-              sub="Everything, for the whole year"
-              price={money(year.price)}
+              name={executive.name}
+              sub="The complete kitchen system"
+              price={money(executive.price)}
+              was={executive.regularPrice ? money(executive.regularPrice) : undefined}
               per="/year"
-              note={`${perMonth(year)}/month, billed once a year`}
-              items={year.includes}
-              cta={`Choose ${year.name}`}
+              note={`${perMonth(executive)}/month · ${pct}% off for founding members`}
+              items={executive.includes}
+              cta="Claim my founding spot"
             />
           </div>
 
-          <p className="mx-auto mt-10 max-w-2xl text-center text-white/60">Both plans include every feature and start with {ATTRACTION.days} free days. Cancel before the trial ends and you pay nothing.</p>
+          {/* Scarcity: real spots count and a fixed end date */}
+          <div className="mx-auto mt-14 max-w-3xl rounded-[2rem] border border-[#facc15]/30 bg-[#facc15]/[0.06] p-7 text-center">
+            <p className="text-sm font-semibold uppercase tracking-widest text-[#facc15]">Founding price ends {endDate}</p>
+            <p className="mt-2 text-2xl font-semibold">
+              {launch.taken.toLocaleString("en-US")} of {launch.spots.toLocaleString("en-US")} founding spots taken
+            </p>
+            <div className="mx-auto mt-4 h-3 max-w-lg overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={launch.spots} aria-valuenow={launch.taken} aria-label="Founding spots taken">
+              <div className="h-full rounded-full bg-gradient-to-r from-[#a6761d] to-[#facc15]" style={{ width: `${Math.max(1, (launch.taken / launch.spots) * 100)}%` }} />
+            </div>
+            <div className="mt-6"><Countdown endsAt={launch.endsAt} /></div>
+            <p className="mt-5 text-white/60">When the spots or the clock run out, the Executive Chef System goes back to {money(executive.regularPrice ?? executive.price)}/year. Founding members keep {money(executive.price)}/year for as long as they stay.</p>
+          </div>
         </section>
 
         {/* 11. Risk reversal */}
@@ -440,10 +457,10 @@ export default function LandingPage() {
   );
 }
 
-function PriceCard({ name, sub, price, was, per, note, items, missing = [], cta, featured, badge }: { name: string; sub: string; price: string; was?: string; per: string; note: string; items: string[]; missing?: string[]; cta: string; featured?: boolean; badge?: string }) {
+function PriceCard({ name, sub, price, was, per, note, items, missing = [], cta, featured }: { name: string; sub: string; price: string; was?: string; per: string; note: string; items: string[]; missing?: string[]; cta: string; featured?: boolean }) {
   return (
     <article className={`relative rounded-[2.2rem] p-7 ${featured ? "border-2 border-[#facc15] bg-gradient-to-b from-[#241d07] to-[#0b0a06] shadow-[0_0_60px_-10px_rgba(250,204,21,0.35)] lg:-mt-6" : "border border-white/10 bg-gradient-to-b from-[#121212] to-black"}`}>
-      {featured && badge && <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#facc15] px-4 py-1 text-sm font-bold text-black">{badge}</span>}
+      {featured && <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#facc15] px-4 py-1 text-sm font-bold text-black">Best value · 80% off</span>}
       <h3 className={`text-2xl font-bold ${featured ? "text-gold" : "bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent"}`}>{name}</h3>
       <p className="mt-1 text-white/60">{sub}</p>
       <p className="mt-6 flex items-end gap-2">
