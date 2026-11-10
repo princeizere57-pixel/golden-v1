@@ -16,6 +16,7 @@ import { TIER_NAME, type Tier } from "@/lib/billing/entitlements";
 import { ATTRACTION, type OfferId } from "@/lib/billing/offers";
 import type { Store } from "@/lib/native/user-agent";
 import { track } from "@/lib/analytics";
+import { ClawInline } from "@/components/claw-loader";
 
 const WhopEmbed = dynamic(() => import("@/components/whop-embed").then((m) => m.WhopEmbed), { ssr: false });
 
@@ -152,7 +153,7 @@ export function CheckoutPanel({ user, level, tier, store: serverStore, offers, d
 
       {/* 4. Payment: Whop on the web only */}
       {store === null ? (
-        <p className="mt-6 py-4 text-center text-muted" role="status">Loading payment…</p>
+        <p className="mt-6 py-4 text-center"><ClawInline text="Loading payment…" /></p>
       ) : store !== "web" ? (
         <section className="mt-6 rounded-3xl bg-surface p-5 text-center" aria-label="Payment">
           <p className="font-semibold">Subscriptions aren&apos;t available in this app yet.</p>
