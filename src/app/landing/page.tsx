@@ -135,9 +135,18 @@ const PLAN_BENEFITS = {
   experience: ["Get recipes right the first time", "Calm, step-by-step cooking, one dish at a time"],
 };
 
+/** The free days, simply: a benefit, then the feature that delivers it in brackets. */
+const TRIAL_DAYS = [
+  "Day 1: Cook what you already have (Pantry-to-Plate)",
+  "Day 2: Recipes at your level (Skill-Adaptation Engine)",
+  "Day 3: Two dishes, hot together (Timing Orchestrator)",
+  "Day 4: Save a dish, don't bin it (Fix My Mistake)",
+  "Day 5: Cook once, eat twice (Hands-free Cook Mode)",
+];
+
 const FAQ = [
   ["How fast will I see value?", "Tonight. Tell Golden what's in your fridge and you get a dinner that uses it, timed and written for your level, in about a minute."],
-  ["What happens in the free 5 days?", "You get every feature, whichever plan you picked. Day 1: a 5-minute fridge check and dinner from what you have. Day 2: three master sauces that make random ingredients work. Day 3: a two-dish dinner, timed to land together, in under 30 minutes. Day 4: a rescue drill with Fix My Mistake. Day 5: cook once, eat twice. Your plan starts after day 5; cancel before then and you pay nothing."],
+  ["What happens in the free 5 days?", `Every feature is yours, whichever plan you pick. ${TRIAL_DAYS.join(". ")}. Your plan starts after day 5; cancel before then and pay nothing.`],
   ["What's the difference between the two plans?", `The Golden Experience (${money(experience.price)}/year) gives you recipes rewritten for your level and cook mode, one dish at a time. The Executive Chef System (${money(executive.price)}/year) adds the timing orchestrator, the Fix My Mistake AI Doctor, Pantry-to-Plate, the technique modules and the money-back guarantee.`],
   ["Why is it 80% off?", `The founding price is for the first 5,000 members only, until the countdown ends. After that the Executive Chef System is ${money(executive.regularPrice ?? executive.price)}/year. Founding members keep their price for as long as they stay.`],
   ["How does the money-back guarantee work?", `Cook ${GUARANTEE.dishes} full meals with Golden. If you don't get every dish on the table hot and on time, rescue at least one mistake, and see a real drop in your weekly food waste, send us your session log within ${GUARANTEE.days} days of purchase for a 100% refund.`],
@@ -324,9 +333,9 @@ export default async function LandingPage() {
               sub="Start here, free"
               price="$0"
               per=""
-              note="Everything unlocked for 5 days"
-              benefits={["See what you'd save, before you pay a cent"]}
-              items={["Day 1: a 5-minute fridge check and dinner from what you have", "Day 2: 3 master sauces for random ingredients", "Day 3: a two-dish dinner in under 30 minutes", "Day 4: rescue a dish with Fix My Mistake", "Day 5: cook once, eat twice"]}
+              note={`Every feature free for ${ATTRACTION.days} days`}
+              benefits={["Save money from day one", "Try everything, pay nothing"]}
+              items={TRIAL_DAYS}
               cta="Start free"
             />
             <PriceCard
@@ -438,7 +447,16 @@ function PriceCard({ name, sub, price, was, per, note, benefits, items, missing 
       </ul>
       <p className="mt-6 text-sm font-semibold uppercase tracking-wide text-white/50">What&apos;s inside</p>
       <ul className="mt-3 space-y-3">
-        {items.map((i) => <li key={i} className="flex gap-3"><span aria-hidden className="text-[#facc15]">✓</span><span className="text-white/85">{i}</span></li>)}
+        {items.map((i) => {
+          // "Benefit (Feature name)": the feature name stays on one line, quieter than the benefit.
+          const m = /^(.*?)\s*\(([^)]+)\)$/.exec(i);
+          return (
+            <li key={i} className="flex gap-3">
+              <span aria-hidden className="text-[#facc15]">✓</span>
+              <span className="text-white/85">{m ? <>{m[1]} <span className="whitespace-nowrap text-white/50">({m[2]})</span></> : i}</span>
+            </li>
+          );
+        })}
         {missing.map((i) => <li key={i} className="flex gap-3 text-white/35"><span aria-hidden>✕</span><span className="line-through">{i}</span></li>)}
       </ul>
       <Link href="/signin" className={`mt-8 flex min-h-14 flex-col items-center justify-center rounded-full text-lg font-semibold transition ${featured ? "bg-[#facc15] text-black hover:bg-[#fde047]" : "border border-white/20 hover:bg-white/10"}`}>{cta}</Link>
