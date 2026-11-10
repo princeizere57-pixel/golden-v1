@@ -15,7 +15,7 @@ import { LEVEL_PITCH, QUESTIONS, prefsFromAnswers, skillFromAnswers, type Answer
 
 const BUILD_LINES = ["Reading your answers…", "Matching techniques to your level…", "Picking your first recipes…", "Setting up cook mode…"];
 
-/** Shown straight after sign-in: everyday cooking problems and the Golden feature that solves each. */
+/** Shown after the questions: everyday cooking problems and the Golden feature that solves each. */
 const PROBLEMS = [
   { Icon: FridgeIcon, problem: "Food goes off in my fridge", fix: "Pantry-to-Plate turns what you already have into tonight's dinner, so less ends up in the bin." },
   { Icon: LifebuoyIcon, problem: "My cooking goes wrong", fix: "Fix My Mistake rescues salty, split or burnt dishes with exact amounts to add." },
@@ -28,14 +28,14 @@ type Stage = { kind: "why" } | { kind: "mini" } | { kind: "question"; index: num
 
 export function OnboardingFlow({ images, userName }: { images: string[]; userName: string }) {
   const router = useRouter();
-  const [stage, setStage] = useState<Stage>({ kind: "why" });
+  const [stage, setStage] = useState<Stage>({ kind: "mini" });
   const [answers, setAnswers] = useState<Answers>({});
   const [line, setLine] = useState(0);
   const { skill } = skillFromAnswers(answers);
 
   const steps = QUESTIONS.length + 4;
   const position =
-    stage.kind === "why" ? 0 : stage.kind === "mini" ? 1 : stage.kind === "question" ? stage.index + 2 : stage.kind === "building" ? QUESTIONS.length + 2 : QUESTIONS.length + 3;
+    stage.kind === "mini" ? 0 : stage.kind === "question" ? stage.index + 1 : stage.kind === "why" ? QUESTIONS.length + 1 : stage.kind === "building" ? QUESTIONS.length + 2 : QUESTIONS.length + 3;
   const progress = ((position + 1) / steps) * 100;
 
   useEffect(() => {
@@ -53,8 +53,7 @@ export function OnboardingFlow({ images, userName }: { images: string[]; userNam
   function back() {
     if (stage.kind === "question" && stage.index > 0) setStage({ kind: "question", index: stage.index - 1 });
     else if (stage.kind === "question") setStage({ kind: "mini" });
-    else if (stage.kind === "mini") setStage({ kind: "why" });
-    else if (stage.kind === "why") router.push("/signin");
+    else if (stage.kind === "mini") router.push("/signin");
     else setStage({ kind: "question", index: QUESTIONS.length - 1 });
   }
 
@@ -93,11 +92,11 @@ export function OnboardingFlow({ images, userName }: { images: string[]; userNam
             <button
               onClick={() => {
                 track("onboarding_problems_seen");
-                setStage({ kind: "mini" });
+                setStage({ kind: "building" });
               }}
               className="min-h-14 w-full rounded-full bg-button text-lg font-semibold text-button-ink"
             >
-              Let&apos;s set up my coach
+              Build my skill path
             </button>
           </div>
         </section>
@@ -122,7 +121,7 @@ export function OnboardingFlow({ images, userName }: { images: string[]; userNam
           index={stage.index}
           answers={answers}
           onChange={setAnswers}
-          onNext={() => setStage(stage.index + 1 < QUESTIONS.length ? { kind: "question", index: stage.index + 1 } : { kind: "building" })}
+          onNext={() => setStage(stage.index + 1 < QUESTIONS.length ? { kind: "question", index: stage.index + 1 } : { kind: "why" })}
         />
       )}
 
