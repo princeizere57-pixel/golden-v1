@@ -6,6 +6,7 @@ import { SiteHeader, TabBar } from "@/components/site-chrome";
 import { TimerProvider, TimerTray } from "@/components/timers";
 import { LANDING_HEADER, journeyComplete } from "@/lib/journey";
 import "./globals.css";
+import { getViewer } from "@/lib/viewer";
 
 // Fonts ship with the app (src/app/fonts, from Google Fonts, SIL Open Font License) so they never
 // depend on reaching Google at startup. Both are variable fonts: Geist (weight), Archivo (weight + width).
@@ -22,6 +23,8 @@ export const viewport: Viewport = { themeColor: "#ffffff" };
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // Before the first-run sequence is done, "/" shows the welcome page, which has no chrome.
   const welcomeAtRoot = !journeyComplete(await cookies());
+  // The header's "Try free" is only for people without a plan: never for payers or during the free days.
+  const showUpsell = welcomeAtRoot ? false : (await getViewer()).access.plan === "free";
   // The marketing landing page is full width and has its own navigation.
   if ((await headers()).get(LANDING_HEADER)) {
     return (
@@ -39,7 +42,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <TimerProvider>
           {/* Golden is a phone app: every screen renders in one centred, phone-width frame. */}
           <div className="app-frame">
-            <SiteHeader welcomeAtRoot={welcomeAtRoot} />
+            <SiteHeader welcomeAtRoot={welcomeAtRoot} upsell={showUpsell} />
             <div className="pb-24">{children}</div>
             <TabBar welcomeAtRoot={welcomeAtRoot} />
             <TimerTray />
