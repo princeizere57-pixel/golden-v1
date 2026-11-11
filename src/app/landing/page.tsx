@@ -63,11 +63,9 @@ const WHO = [
 ];
 
 /** Why it matters: what bad dinners cost them, then what changes. */
-const WHY: { kind: string; photo: string; alt: string; Icon: (p: { size?: number }) => ReactNode; pain: string; fix: string; win: string }[] = [
+const WHY: { kind: string; Icon: (p: { size?: number }) => ReactNode; pain: string; fix: string; win: string }[] = [
   {
     kind: "Your money",
-    photo: "/photos/counter-groceries.webp",
-    alt: "Tomatoes, eggs and fresh bread on a kitchen counter",
     Icon: FridgeIcon,
     pain: "You pay for food twice: once at the shop, again when the forgotten vegetables go in the bin, the expensive cut comes out grey and tough, and dinner turns into a takeaway.",
     fix: "Cook what's already in your fridge, and save the dish when something goes wrong.",
@@ -75,8 +73,6 @@ const WHY: { kind: string; photo: string; alt: string; Icon: (p: { size?: number
   },
   {
     kind: "Your well-being",
-    photo: "/photos/steaming-pot.webp",
-    alt: "A pot steaming gently by a sunny window",
     Icon: SteamingDishIcon,
     pain: "It's 7 PM and \"what's for dinner?\" is one decision too many. So it's something processed again, or two draining hours at the stove.",
     fix: "One clear pick for tonight, written for your level, one step at a time.",
@@ -84,8 +80,6 @@ const WHY: { kind: string; photo: string; alt: string; Icon: (p: { size?: number
   },
   {
     kind: "Your people",
-    photo: "/photos/friends-picnic.webp",
-    alt: "Friends sharing food at a picnic",
     Icon: PanFireIcon,
     pain: "The steak goes cold while the potatoes finish, and you spend the evening at the stove while everyone else is talking.",
     fix: "Every dish timed to land hot together, with a nudge when to start each one.",
@@ -94,11 +88,11 @@ const WHY: { kind: string; photo: string; alt: string; Icon: (p: { size?: number
 ];
 
 /** How, part 1: what you get. Benefits first, in plain words. */
-const BENEFITS: { title: string; text: string; photo: string; alt: string; Icon: (p: { size?: number }) => ReactNode }[] = [
-  { title: "Dinner from what you already have", text: "No special shop. The food you bought gets eaten, not binned.", photo: "/photos/ingredients-board.webp", alt: "Avocado, eggs, mushrooms and greens laid out on a board", Icon: FridgeIcon },
-  { title: "Expensive mistakes, saved", text: "Too salty, split or overcooked? Fixed in seconds, not thrown away.", photo: "/photos/chef-saucing.webp", alt: "A cook finishing plates of fish with sauce", Icon: LifebuoyIcon },
-  { title: "Everything hot, together", text: "Two, three or four dishes ready at the same minute, without the juggling.", photo: "/photos/stirring-pan.webp", alt: "Stirring a hot pan of vegetables", Icon: StopwatchIcon },
-  { title: "Better every time you cook", text: "Recipes pitched at your level, and XP, streaks and chef ranks as you improve.", photo: "/photos/chopping-herbs.webp", alt: "Chopping fresh coriander with a chef's knife", Icon: TrophyIcon },
+const BENEFITS: { title: string; text: string; Icon: (p: { size?: number }) => ReactNode }[] = [
+  { title: "Dinner from what you already have", text: "No special shop. The food you bought gets eaten, not binned.", Icon: FridgeIcon },
+  { title: "Expensive mistakes, saved", text: "Too salty, split or overcooked? Fixed in seconds, not thrown away.", Icon: LifebuoyIcon },
+  { title: "Everything hot, together", text: "Two, three or four dishes ready at the same minute, without the juggling.", Icon: StopwatchIcon },
+  { title: "Better every time you cook", text: "Recipes pitched at your level, and XP, streaks and chef ranks as you improve.", Icon: TrophyIcon },
 ];
 
 /** How, part 2: the features that deliver those benefits. */
@@ -248,9 +242,7 @@ export default async function LandingPage() {
           <p className="mt-4 text-center text-sm text-white/40">Estimate: USDA Economic Research Service.</p>
           <div className="mx-auto mt-14 grid max-w-6xl gap-5 lg:grid-cols-3">
             {WHY.map((c) => (
-              <article key={c.kind} className="overflow-hidden rounded-[2.2rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent p-7">
-                {/* eslint-disable-next-line @next/next/no-img-element -- Golden's own photo */}
-                <img src={c.photo} alt={c.alt} loading="lazy" className="-mx-7 -mt-7 mb-6 aspect-[4/3] w-[calc(100%+3.5rem)] max-w-none object-cover" />
+              <article key={c.kind} className="rounded-[2.2rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent p-7">
                 <div className="flex items-center gap-3"><c.Icon size={44} /><h3 className="text-2xl font-bold">{c.kind}</h3></div>
                 <p className="mt-4 text-white/70">{c.pain}</p>
                 <div className="mt-5 rounded-2xl bg-[#facc15]/10 p-4">
@@ -272,9 +264,7 @@ export default async function LandingPage() {
           <img src="/photos/spices.jpg" alt="Spices on silver spoons with fresh herbs and chillies" loading="lazy" className="mx-auto mt-10 aspect-[16/9] w-full max-w-6xl rounded-[2rem] object-cover sm:aspect-[21/9]" />
           <div className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {BENEFITS.map((b) => (
-              <article key={b.title} className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
-                {/* eslint-disable-next-line @next/next/no-img-element -- Golden's own photo */}
-                <img src={b.photo} alt={b.alt} loading="lazy" className="-mx-6 -mt-6 mb-5 aspect-[4/3] w-[calc(100%+3rem)] max-w-none object-cover" />
+              <article key={b.title} className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
                 <b.Icon size={44} />
                 <h3 className="mt-4 text-xl font-semibold">{b.title}</h3>
                 <p className="mt-2 text-white/60">{b.text}</p>
