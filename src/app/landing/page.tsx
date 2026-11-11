@@ -10,7 +10,7 @@ import { PantryMatcher } from "@/components/pantry-matcher";
 import { Brand } from "@/components/site-chrome";
 import { TrialTimeline } from "@/components/trial-timeline";
 import { launchState } from "@/lib/billing/launch";
-import { ATTRACTION, GUARANTEE, money, offerById, percentOff, perMonth } from "@/lib/billing/offers";
+import { ATTRACTION, FOUNDING_SPOTS, GUARANTEE, money, offerById, percentOff, perMonth } from "@/lib/billing/offers";
 import { RECIPES } from "@/lib/data/recipes";
 import { RANKS } from "@/lib/gamify";
 import { libraryRecipes } from "@/lib/library";
@@ -148,7 +148,7 @@ const FAQ = [
   ["How fast will I see value?", "Tonight. Tell Golden what's in your fridge and you get a dinner that uses it, timed and written for your level, in about a minute."],
   ["What happens in the free 5 days?", `Every feature is yours, whichever plan you pick. ${TRIAL_DAYS.join(". ")}. Your plan starts after day 5; cancel before then and pay nothing.`],
   ["What's the difference between the two plans?", `The Golden Experience (${money(experience.price)}/year) gives you recipes rewritten for your level and cook mode, one dish at a time. The Executive Chef System (${money(executive.price)}/year) adds the timing orchestrator, the Fix My Mistake AI Doctor, Pantry-to-Plate, the technique modules and the money-back guarantee.`],
-  ["Why is it 80% off?", `The founding price is for the first 5,000 members only, until the countdown ends. After that the Executive Chef System is ${money(executive.regularPrice ?? executive.price)}/year. Founding members keep their price for as long as they stay.`],
+  ["Why is it 80% off?", `The founding price is for the first ${FOUNDING_SPOTS.toLocaleString("en-US")} members only, until the countdown ends. After that the Executive Chef System is ${money(executive.regularPrice ?? executive.price)}/year. Founding members keep their price for as long as they stay.`],
   ["How does the money-back guarantee work?", `Cook ${GUARANTEE.dishes} full meals with Golden. If you don't get every dish on the table hot and on time, rescue at least one mistake, and see a real drop in your weekly food waste, send us your session log within ${GUARANTEE.days} days of purchase for a 100% refund.`],
   ["How do I cancel? Does it work on my phone?", "Cancel any time in two taps from your account. Golden runs on iPhone, Android and any browser, and cook mode keeps your screen awake while you cook."],
 ];
@@ -177,7 +177,12 @@ export default async function LandingPage() {
           <span className="rounded-full bg-black px-2.5 py-0.5 text-[#facc15]">{launch.left.toLocaleString("en-US")} of {launch.spots.toLocaleString("en-US")} spots left</span>
         </a>
         <nav aria-label="Main" className="mx-auto flex max-w-6xl items-center justify-between px-4 pt-3 sm:px-6">
-          <Link href="/landing" aria-label="Golden home"><Brand className="text-2xl text-white sm:text-3xl" /></Link>
+          <Link href="/landing" aria-label="Golden home" className="flex items-center gap-2.5">
+            {/* The favicon itself: black claw on a white tile, so it reads on the black page too. */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- tiny brand mark */}
+            <img src="/icon.png" alt="" width={36} height={36} className="h-9 w-9" />
+            <Brand className="text-2xl text-white sm:text-3xl" />
+          </Link>
           <Link href="/signin" className="rounded-full bg-[#facc15] px-5 py-2.5 text-[15px] font-semibold text-black transition hover:bg-[#fde047] sm:px-6">Try free</Link>
         </nav>
         <nav aria-label="Sections" className="mx-auto max-w-6xl overflow-x-auto px-4 py-3 [scrollbar-width:none] sm:px-6">
@@ -260,6 +265,8 @@ export default async function LandingPage() {
           <h2 id="how-title" className="mx-auto mt-3 max-w-4xl text-center text-4xl font-bold tracking-tight sm:text-6xl">
             What you get, <span className="text-gold">starting tonight</span>
           </h2>
+          {/* eslint-disable-next-line @next/next/no-img-element -- Golden's own photo */}
+          <img src="/photos/spices.jpg" alt="Spices on silver spoons with fresh herbs and chillies" loading="lazy" className="mx-auto mt-10 aspect-[16/9] w-full max-w-6xl rounded-[2rem] object-cover sm:aspect-[21/9]" />
           <div className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {BENEFITS.map((b) => (
               <article key={b.title} className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
@@ -406,6 +413,8 @@ export default async function LandingPage() {
           </div>
 
           <div className="mx-auto mt-20 max-w-3xl text-center">
+            {/* eslint-disable-next-line @next/next/no-img-element -- Golden's own photo */}
+            <img src="/photos/chef-chopping.jpg" alt="A cook halving cherry tomatoes on a wooden board" loading="lazy" className="mb-10 aspect-[16/9] w-full rounded-[2rem] object-cover" />
             <h2 className="text-4xl font-bold leading-tight sm:text-5xl">Tonight&apos;s dinner, <span className="text-gold">from what you already have</span></h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-white/60">Start free, cook something good tonight, and decide in {ATTRACTION.days} days. On iPhone, Android and the web.</p>
             <Link href="/signin" className="mt-8 inline-block rounded-full bg-[#facc15] px-10 py-4 text-lg font-semibold text-black transition hover:bg-[#fde047]">Start free: $0 today</Link>
@@ -416,10 +425,13 @@ export default async function LandingPage() {
 
       <footer className="border-t border-white/10 px-5 py-10 text-sm text-white/40">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <Brand className="text-xl text-white" />
+          <span className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element -- tiny brand mark */}
+            <img src="/icon.png" alt="" width={28} height={28} className="h-7 w-7" />
+            <Brand className="text-xl text-white" />
+          </span>
           <div className="flex gap-6">
             <Link href="/guarantee" className="hover:text-white">Guarantee</Link>
-            <Link href="/giveaway" className="hover:text-white">Giveaway rules</Link>
             <a href="#faq" className="hover:text-white">FAQ</a>
           </div>
           <p>© {new Date().getFullYear()} Golden</p>
