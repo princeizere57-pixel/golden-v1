@@ -40,21 +40,21 @@ const SECTIONS = [
 /** The people Golden is built for, in their own moment. */
 const WHO = [
   {
-    title: "You're home at 7 PM, tired",
+    title: "Ambitious professionals",
     photo: "/landing/avatar-professional.jpg",
     alt: "A professional woman in a blazer cooking a quick stir-fry after work",
     moment: "You want real food, not another takeaway. You've got about 30 minutes and whatever is in the fridge.",
     gets: "Tonight's dinner from what you already have, step by step.",
   },
   {
-    title: "You feed a family on a budget",
+    title: "Busy parents",
     photo: "/landing/avatar-parent.jpg",
     alt: "A father and his young daughter laughing while they cook dinner together",
     moment: "The grocery bill keeps going up, some of it still ends up in the bin, and everyone wants something different.",
     gets: "Meals from food you've already bought, all ready at the same time.",
   },
   {
-    title: "You cook for people you love",
+    title: "Home cooking enthusiasts",
     photo: "/landing/avatar-enthusiast.jpg",
     alt: "A home cook serving a multi-course dinner to friends by candlelight",
     moment: "Three dishes at once means cold food, an expensive cut you're scared to ruin, and you stuck at the stove.",
